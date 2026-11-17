@@ -12,7 +12,8 @@
     "test:e2e": "playwright test --trace off",
     "gen:messages": "node scripts/gen-messages.mjs",
     "gen:foods": "node scripts/build-foods.mts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "gen:setup": "node scripts/gen-setup.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.4.0",

@@ -15,6 +15,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run gen:setup && git diff --exit-code supabase/setup.sql
       - run: npm test
       - run: npm run build
       - name: No server secrets in client bundle

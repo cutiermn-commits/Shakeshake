@@ -5,7 +5,7 @@
 ## 1. First-time setup (≈ 30 minutes, all free tiers)
 
 1. **Supabase** — create a Free project (pick the region closest to India). In *Project Settings → API Keys* copy the **publishable** key and the **secret** key.
-2. **Database** — open *SQL editor* and run, in order, every file in `supabase/migrations/` (`0001` → `0004`). Or with the Supabase CLI: `supabase link` then `supabase db push`.
+2. **Database** — open *SQL Editor → New query*, paste the whole of `supabase/setup.sql` (all migrations in one file) and press **Run**. Expect "Success. No rows returned". Or with the Supabase CLI: `supabase link` then `supabase db push`.
 3. **Auth** — *Authentication → Sign In / Providers → Email*: keep email enabled. *Authentication → URL configuration*: Site URL = your Vercel URL; add `https://YOUR-APP.vercel.app/auth/confirm` to Redirect URLs.
    Email template "Magic Link": make sure it includes the 6-digit `{{ .Token }}` (iPhone Home Screen apps can't open magic links in the same window, so the code is the reliable path) and, optionally, a link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
    ⚠️ Supabase's built-in email sender is rate-limited and meant for testing (NOT VERIFIED exact limit — check *Auth → Rate limits*). For more than a few friends, configure a free SMTP provider.

@@ -9,7 +9,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-const STUB = `
+export const STUB = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
 create schema auth; create schema storage;
 grant usage on schema auth, storage to anon, authenticated, service_role;
