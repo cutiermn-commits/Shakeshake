@@ -22,16 +22,30 @@
 | D-013 | Feed default: friends see **everything incl. calories & protein** | APPROVED | Requires `social_sharing` consent at onboarding; per-meal "make private" toggle still offered (privacy by design). Health profile (weight, allergies) is never shared. |
 | D-016 | App name: **Shake Shake** | APPROVED | Trademark check before public launch (O-005). |
 
-## Proposed by Claude — need owner OK
+## Proposed by Claude — approved by owner 2026-11-17
 
 | ID | Proposal | Status | Rationale |
 |---|---|---|---|
-| D-014 | AI returns ingredients in grams; **app computes macros from USDA FoodData Central (CC0)**; unmatched → "AI estimate" badge | PROPOSED | Prevents hallucinated nutrition numbers; traceable source. |
-| D-015 | Leaderboard scoring: move % (cap 200) + protein % (cap 100) + logging & streak pts (max 50), daily max 350; weekly reset Mon 00:00 IST; goals locked per week | PROPOSED | Fair across body sizes, rewards app purpose, resists gaming. |
-| D-017 | Per-user AI quota default 15 calls/day + global circuit breaker | PROPOSED | Keeps within unpublished free-tier limits; tune after reading AI Studio limits. |
-| D-018 | Push cap 4/day, quiet hours 22:00–07:00 | PROPOSED | Avoid notification fatigue; iOS users can revoke easily. |
-| D-019 | Photo retention: originals deleted after 90 days, thumbnails kept | PROPOSED | Stays inside 1 GB free storage. |
-| D-020 | Auth: email OTP / magic link (no passwords, no social login initially) | PROPOSED | Simplest secure default on Supabase; Google sign-in can come later. |
+| D-014 | AI returns ingredients in grams; **app computes macros from USDA FoodData Central (CC0)**; unmatched → "AI estimate" badge | APPROVED (owner, 2026-11-17) | Prevents hallucinated nutrition numbers; traceable source. |
+| D-015 | Leaderboard scoring: move % (cap 200) + protein % (cap 100) + logging & streak pts (max 50), daily max 350; weekly reset Mon 00:00 IST; goals locked per week | APPROVED (owner, 2026-11-17) | Fair across body sizes, rewards app purpose, resists gaming. |
+| D-017 | Per-user AI quota default 15 calls/day + global circuit breaker | APPROVED (owner, 2026-11-17) | Keeps within unpublished free-tier limits; tune after reading AI Studio limits. |
+| D-018 | Push cap 4/day, quiet hours 22:00–07:00 | APPROVED (owner, 2026-11-17) | Avoid notification fatigue; iOS users can revoke easily. |
+| D-019 | Photo retention: originals deleted after 90 days, thumbnails kept | APPROVED (owner, 2026-11-17) | Stays inside 1 GB free storage. |
+| D-020 | Auth: email OTP / magic link (no passwords, no social login initially) | APPROVED (owner, 2026-11-17) | Simplest secure default on Supabase; Google sign-in can come later. |
+
+## Build-time decisions (Claude Code, 2026-11-17) — approved by owner 2026-11-17
+
+| ID | Decision | Status | Rationale / evidence |
+|---|---|---|---|
+| D-021 | **Scheduler = Supabase Cron (pg_cron + pg_net) → `POST /api/cron/dispatch` every 5 min**, authenticated with `CRON_SECRET`; messages are picked and pushed from the Next.js server (web-push). Daily retention job the same way. | APPROVED (owner, 2026-11-17) | Vercel Hobby cron runs **once per day only** (VERIFIED: vercel.com/docs/cron-jobs/usage-and-pricing, 2026-11-17) — too coarse for plate reminders. Supabase Cron runs every second → yearly and can make HTTP requests (VERIFIED: supabase.com/docs/guides/cron). Keeps one runtime (Node) instead of a second Deno code base. Free-plan availability of pg_cron/pg_net: NOT VERIFIED explicitly — confirm in dashboard. |
+| D-022 | `recomposition` goal uses TDEE × 0.90–1.00 | APPROVED (owner, 2026-11-17) | NUTRITION_RULES §2.1 defines lose/maintain/gain only. Mild deficit is a common recomposition approach — confirm with a dietitian. |
+| D-023 | `birth_year`, `sex`, `height_cm` moved from `profiles` to owner-only `health_profile` | APPROVED (owner, 2026-11-17) | Friends can read `profiles` (name, avatar). RLS is row-level, so body data in that row would leak. Implements D-013 "health profile is never shared". |
+| D-024 | Revoking `health_data` consent deletes the health profile; revoking push deletes push subscriptions | APPROVED (owner, 2026-11-17) | Purpose limitation / DPDP. Targets are kept (needed for history) — legal review O-009 should confirm. |
+| D-025 | Next.js **16.4** with Cache Components (scaffold default): pages stream session-dependent content inside `<Suspense>`; auth refresh in `src/proxy.ts` (Next 16 renamed middleware → proxy) | APPROVED (owner, 2026-11-17) | Follows bundled docs `node_modules/next/dist/docs` (authentication-with-cache-components, proxy). |
+| D-026 | Supabase keys use current names: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (supersede ANON/SERVICE_ROLE names in the original `.env.example`) | APPROVED (owner, 2026-11-17) | VERIFIED: Supabase SSR guide for Next.js (2026-11-17). Session checks use `getClaims()` (verifies JWT), never `getSession()` server-side. |
+| D-027 | Redeeming an invite creates the profile and an **accepted friendship with the inviter**; strangers connect via an 8-char friend code (no user directory) | APPROVED (owner, 2026-11-17) | Fewer steps for invitees; no searchable user list (privacy, anti-abuse). |
+| D-028 | Nutrition seed = USDA FDC **SR Legacy 2018-04** + **Foundation 2026-10-29** (CC0), auto-matched to a 174-item South Indian catalogue; 163 matched, 11 unmatched (paneer, curry leaves, horse gram, poha, sardine, …); rows imported `reviewed=false` | APPROVED (owner, 2026-11-17) | Generated by `scripts/build-foods.mts`; review `docs/FOODS_IMPORT_REPORT.md`. Unmatched items make recipes "≈ partial" — strong reason to resolve O-001 (IFCT 2017). |
+| D-029 | Photo retention deletes the photo after 90 days; **thumbnails not implemented yet** (deviation from D-019) | APPROVED (owner, 2026-11-17) | Keeps within 1 GB. Thumbnail generation would need server image processing — add later if wanted. |
 
 ## Open questions
 
@@ -39,8 +53,8 @@
 |---|---|---|---|
 | O-001 | May IFCT 2017 (© NIN) values be embedded in the app? If yes, prefer it for Indian ingredients; else USDA FDC only. | Mani (ask NIN / check licence) | M2 |
 | O-002 | Do Gemini API terms allow the free tier for users outside India (EEA/UK/CH)? | Claude Code to check Gemini API Additional Terms | Before inviting non-India users |
-| O-003 | Exact current free-tier model + RPD/RPM for our project | Claude Code (AI Studio) | M1 |
-| O-004 | Does Supabase free plan include scheduled jobs (pg_cron / scheduled Edge Functions) we need for reminders? | Claude Code (Supabase docs) | M1 |
+| O-003 | Exact current free-tier model + RPD/RPM for our project | **Mani** — NOT VERIFIED by Claude Code: Gemini docs now redirect to aistudio.google.com (blocked in the build environment) and limits are per-project in AI Studio. Set `GEMINI_MODEL` and `AI_GLOBAL_DAILY_CAP` from what AI Studio shows. | Before enabling AI |
+| O-004 | Does Supabase free plan include scheduled jobs (pg_cron / scheduled Edge Functions) we need for reminders? | **Partly answered** (D-021): Supabase Cron exists and can call HTTP endpoints; pricing page lists Cron as a module with no plan restriction stated. Confirm in your Free project dashboard. | Before launch |
 | O-005 | Trademark check: "Shake Shake" vs "Shake Shack" | Mani | Before public launch |
 | O-006 | Her usual meal times, cooking time available, spice level, dislikes/allergies (captured in onboarding, but useful for testing) | Mani | M1 test data |
 | O-007 | Does she prefer Tamil/Kerala/Andhra/Karnataka styles, or a mix? | Mani | M2 prompt tuning |

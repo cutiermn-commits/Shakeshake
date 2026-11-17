@@ -1,0 +1,33 @@
+{
+  "title": "Eral thokku",
+  "region": "tamil",
+  "meal_type": "lunch",
+  "diet_type": "nonveg",
+  "servings": 2,
+  "cook_minutes": 40,
+  "ingredients": [
+    {
+      "name": "prawns (eral)",
+      "grams": 300,
+      "state": "raw"
+    },
+    {
+      "name": "onion",
+      "grams": 100,
+      "state": "raw"
+    },
+    {
+      "name": "oil",
+      "grams": 15,
+      "state": "raw"
+    }
+  ],
+  "steps": [
+    "Pressure-cook rice and dal together.",
+    "Saut\u00e9 onion and tomato, add chicken and pepper, cook until done."
+  ],
+  "protein_tip": "Add a boiled egg on the side for extra protein.",
+  "why": "Chicken plus dal gives two protein sources in one plate.",
+  "ai_kcal_per_serving": 650,
+  "ai_protein_g_per_serving": 50
+}

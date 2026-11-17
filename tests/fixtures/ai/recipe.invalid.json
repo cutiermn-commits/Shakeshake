@@ -1,0 +1,23 @@
+{
+  "title": "Pepper chicken with toor dal rice",
+  "region": "tamil",
+  "meal_type": "lunch",
+  "diet_type": "nonveg",
+  "servings": 0,
+  "cook_minutes": 40,
+  "ingredients": [
+    {
+      "name": "chicken",
+      "grams": 400,
+      "state": "cooked"
+    }
+  ],
+  "steps": [
+    "Pressure-cook rice and dal together.",
+    "Saut\u00e9 onion and tomato, add chicken and pepper, cook until done."
+  ],
+  "protein_tip": "Add a boiled egg on the side for extra protein.",
+  "why": "Chicken plus dal gives two protein sources in one plate.",
+  "ai_kcal_per_serving": 650,
+  "ai_protein_g_per_serving": 50
+}

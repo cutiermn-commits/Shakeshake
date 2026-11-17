@@ -29,9 +29,9 @@ Fit-to-standard (Supabase/Next.js built-ins) · configuration before code · sin
 | Component | Responsibility | Tech |
 |---|---|---|
 | PWA shell | UI, offline shell, camera upload, image compression, push subscription | Next.js App Router, Tailwind, service worker, web manifest |
-| AI gateway (`lib/ai/`) | Consent check → quota → prompt → structured output → zod validation → nutrition recompute → cache | Server-only TS module |
-| Nutrition engine (`lib/nutrition/`) | Ingredient matching, macro computation, targets formulas, unit conversion for grocery list | Pure TS, unit-tested |
-| Scheduler | Meal-photo reminders, morning nudges, weekly plan prompt, leaderboard close | Supabase scheduled job → Edge Function → Web Push (*NOT VERIFIED: confirm pg_cron/scheduled functions on free plan*) |
+| AI gateway (`src/lib/ai/`) | Consent check → quota → prompt → structured output → zod validation → nutrition recompute → cache | Server-only TS module |
+| Nutrition engine (`src/lib/nutrition/`) | Ingredient matching, macro computation, targets formulas, unit conversion for grocery list | Pure TS, unit-tested |
+| Scheduler | Meal-photo reminders, morning nudges, weekly plan prompt, photo retention | Supabase Cron → `POST /api/cron/*` (Next.js route) → Web Push (D-021) |
 | Social | Invites, friendships, feed, reactions, comments, reports | Postgres + RLS (+ Supabase Realtime optional) |
 | Privacy centre | Consents, export (JSON), delete account, data-sharing toggles | Server actions + Edge Function for cascade delete incl. storage |
 
@@ -108,7 +108,7 @@ ai_usage(user_id, date, calls, kind)
 |---|---|---|---|
 | E1 | Gemini API free tier exists; free-tier data "Used to improve our products: Yes", paid "No" | VERIFIED | https://ai.google.dev/gemini-api/docs/pricing |
 | E2 | Free-tier per-model RPM/RPD not published as fixed numbers; view in AI Studio | DOCUMENTED | ai.google.dev rate-limits page via secondary summaries (2026) — re-check |
-| E3 | Supabase Free: 500 MB DB, 1 GB file storage, 5 GB egress, 50k MAU, 2 projects, pauses after 1 week inactivity | DOCUMENTED | supabase.com/pricing via multiple 2026 secondary sources — re-check |
+| E3 | Supabase Free: 500 MB DB, 1 GB file storage, 5 GB egress, 50k MAU, 2 projects, pauses after 1 week inactivity | VERIFIED 2026-11-17 | https://supabase.com/pricing |
 | E4 | Vercel Hobby restricted to non-commercial personal use | VERIFIED | https://vercel.com/docs/plans/hobby |
 | E5 | iOS 16.4+ Web Push for Home Screen web apps, user-gesture permission | VERIFIED | webkit.org (above) |
 | E6 | Oura API v2: OAuth2 only; personal access tokens deprecated Dec 2025; apps limited to 10 users before Oura approval | VERIFIED | Oura OpenAPI spec: https://cloud.ouraring.com/v2/docs |
@@ -119,6 +119,13 @@ ai_usage(user_id, date, calls, kind)
 | E11 | Apple Activity Competitions: 1 point per % of rings, max 600/day | DOCUMENTED | Secondary sources quoting Apple support |
 | E12 | Gemini free tier usable for end users in India; restrictions for EEA/UK/CH users | NOT VERIFIED | Check Gemini API Additional Terms before inviting users outside India |
 | E13 | Oura `daily_activity` exposes active/total calories fields | NOT VERIFIED | Check OpenAPI spec before phase 2 |
+| E14 | Vercel Hobby cron: max once per day, ±59 min precision | VERIFIED 2026-11-17 | https://vercel.com/docs/cron-jobs/usage-and-pricing |
+| E15 | Supabase Cron (pg_cron) schedules SQL or HTTP requests (e.g. invoking functions), every second → yearly | VERIFIED 2026-11-17 | https://supabase.com/docs/guides/cron |
+| E16 | Supabase Edge Functions Free plan: 150 s wall clock, 2 s CPU, 100 functions | VERIFIED 2026-11-17 | https://supabase.com/docs/guides/functions/limits |
+| E17 | Supabase SSR for Next.js: `@supabase/ssr`, publishable key, proxy refresh via `getClaims()`; never trust `getSession()` on the server | VERIFIED 2026-11-17 | https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs |
+| E18 | Gemini JS SDK `@google/genai` 3.4: `generateContent` config supports `responseMimeType` + `responseJsonSchema`; errors are `ApiError` with HTTP `status` | VERIFIED (installed package type definitions) | node_modules/@google/genai/dist/genai.d.ts |
+| E19 | USDA FDC datasets used: SR Legacy 2018-04 JSON (sha256 0fe8ae48…), Foundation 2026-10-29 JSON (sha256 dd414cc9…) | VERIFIED | https://fdc.nal.usda.gov/download-datasets |
+| E20 | Gemini free-tier models/limits for this project | NOT VERIFIED | Docs moved to aistudio.google.com (not reachable from build env) — owner to check AI Studio (O-003) |
 
 ## 9. Alternatives considered
 
