@@ -1,0 +1,28 @@
+{
+  "title": "Vanjaram tawa fry",
+  "region": "tamil",
+  "meal_type": "lunch",
+  "diet_type": "nonveg",
+  "servings": 2,
+  "cook_minutes": 40,
+  "ingredients": [
+    {
+      "name": "seer fish",
+      "grams": 300,
+      "state": "raw"
+    },
+    {
+      "name": "chilli powder",
+      "grams": 5,
+      "state": "raw"
+    }
+  ],
+  "steps": [
+    "Marinate the fish.",
+    "Shallow fry on a hot tawa till crisp."
+  ],
+  "protein_tip": "Add a boiled egg on the side for extra protein.",
+  "why": "Chicken plus dal gives two protein sources in one plate.",
+  "ai_kcal_per_serving": 650,
+  "ai_protein_g_per_serving": 50
+}

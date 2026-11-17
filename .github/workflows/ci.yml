@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: No server secrets in client bundle
+        run: "! grep -rlE 'SUPABASE_SECRET_KEY|GEMINI_API_KEY|VAPID_PRIVATE_KEY|CRON_SECRET' .next/static"
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --trace off
