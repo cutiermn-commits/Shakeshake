@@ -12,7 +12,7 @@ export function LoginForm({ invite = "", notice }: { invite?: string; notice?: s
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-12">
-      <h1 className="h1">{step === "code" ? "Check your email" : "Sign in"}</h1>
+      <h1 className="h1">{step === "code" ? "Check your email 📬" : "Sign in"}</h1>
       {notice ? <p className="mt-2 rounded-xl bg-surface-2 p-3 text-sm">{notice}</p> : null}
       {step === "email" ? (
         <form action={send} className="mt-6 space-y-4">
@@ -29,12 +29,15 @@ export function LoginForm({ invite = "", notice }: { invite?: string; notice?: s
         </form>
       ) : (
         <form action={verify} className="mt-6 space-y-4">
-          <p className="muted">We sent a code (and a sign-in link) to <strong className="text-ink">{email}</strong>.</p>
+          <p className="muted">We emailed a sign-in link to <strong className="text-ink">{email}</strong>.</p>
+          <p className="rounded-xl bg-surface-2 p-3 text-sm">
+            👉 Open the email <b>on this device</b> and tap <b>Sign in</b>. If the email shows a 6-digit code instead, enter it below.
+          </p>
           <input type="hidden" name="email" value={email} />
           <input type="hidden" name="invite" value={inv} />
           <div>
-            <label className="label" htmlFor="token">Code</label>
-            <input className="field text-center text-2xl tracking-[0.4em]" id="token" name="token" inputMode="numeric" autoComplete="one-time-code" maxLength={10} required />
+            <label className="label" htmlFor="token">Code (only if your email has one)</label>
+            <input className="field text-center text-2xl tracking-[0.4em]" id="token" name="token" inputMode="numeric" autoComplete="one-time-code" maxLength={10} />
           </div>
           {verified?.error ? <p role="alert" className="text-sm text-danger">{verified.error}</p> : null}
           <button className="btn-primary w-full" disabled={verifying}>{verifying ? "Checking…" : "Sign in"}</button>

@@ -35,7 +35,11 @@ export async function sendCode(_prev: FormState, form: FormData): Promise<FormSt
   }
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser, emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/confirm` },
+    options: {
+      shouldCreateUser,
+      // After the link: new members go to /welcome to redeem the invite, others to /today.
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/confirm?next=${encodeURIComponent(invite ? `/welcome?invite=${invite}` : "/today")}`,
+    },
   });
   if (error) {
     // Don't reveal whether an account exists.
