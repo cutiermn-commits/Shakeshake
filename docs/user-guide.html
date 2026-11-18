@@ -1,0 +1,236 @@
+<title>Shake Shake Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one narrow reading column, phone-first; sections separated by space, a few tinted panels for "how to" steps. Colours follow the app's own tokens (src/app/globals.css). */
+:root {
+  --bg: #fffaf2;
+  --surface: #ffffff;
+  --tint: #fbf1e1;
+  --ink: #2b1d0e;
+  --ink-2: #6b5843;
+  --line: #ecdcc4;
+  --brand: #b4420c;
+  --leaf: #2f6b3a;
+  --turmeric: #c98a12;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17110b; --surface: #221911; --tint: #2c2118; --ink: #f8ecdc; --ink-2: #c9b49b;
+    --line: #3d2f22; --brand: #ff8a4c; --leaf: #7cc68a; --turmeric: #f2b233; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17110b; --surface: #221911; --tint: #2c2118; --ink: #f8ecdc; --ink-2: #c9b49b;
+  --line: #3d2f22; --brand: #ff8a4c; --leaf: #7cc68a; --turmeric: #f2b233; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 680px; margin: 0 auto; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2.2rem, 7vw, 3rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.45rem; font-weight: 750; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+.muted { color: var(--ink-2); }
+.eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.hero { gap: 12px; }
+.tagline { font-size: 1.15rem; color: var(--ink-2); font-style: italic; }
+.url { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.url code { font: 600 0.95rem ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--tint); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; word-break: break-all; }
+.btn { font: 600 0.9rem var(--font-body); color: var(--brand); background: transparent; border: 1px solid var(--brand); border-radius: 10px; padding: 8px 12px; cursor: pointer; min-height: 40px; }
+.btn:focus-visible, a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+a { color: var(--brand); }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.feature { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.feature .ic { font-size: 1.5rem; line-height: 1.2; flex: none; width: 2rem; text-align: center; }
+.feature p { color: var(--ink-2); font-size: 0.95rem; }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2rem 1fr; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.steps li::before { content: counter(s); width: 2rem; height: 2rem; border-radius: 50%; background: var(--brand); color: var(--bg); font-weight: 800; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.steps li > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.steps li p { color: var(--ink-2); font-size: 0.95rem; }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 6px; text-align: center; }
+.tabs div { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.78rem; font-weight: 600; min-width: 0; }
+.tabs span { font-size: 1.4rem; }
+.tabs small { font-weight: 400; color: var(--ink-2); font-size: 0.7rem; line-height: 1.3; }
+.panel { background: var(--tint); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.panel ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 6px; }
+.badges { display: flex; flex-direction: column; gap: 10px; }
+.badge-row { display: grid; grid-template-columns: 11rem 1fr; gap: 12px; align-items: baseline; }
+.pill { display: inline-block; font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { color: var(--leaf); background: color-mix(in srgb, var(--leaf) 15%, transparent); }
+.pill.est { color: var(--turmeric); background: color-mix(in srgb, var(--turmeric) 18%, transparent); }
+.points { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.points div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.points b { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.points small { color: var(--ink-2); font-size: 0.85rem; line-height: 1.4; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+details + details { margin-top: 8px; }
+summary { font-weight: 650; cursor: pointer; }
+details p { margin-top: 8px; color: var(--ink-2); }
+.disclaimer { border-top: 1px solid var(--line); padding-top: 18px; font-size: 0.85rem; color: var(--ink-2); }
+@media (max-width: 460px) {
+  .badge-row { grid-template-columns: 1fr; gap: 4px; }
+  .tabs small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <section class="hero">
+    <span class="eyebrow">Your guide</span>
+    <h1>Shake Shake 🍳</h1>
+    <p class="tagline">The only shake you need is the one you give the pan.</p>
+    <p>Shake Shake helps you eat more protein from real South Indian food instead of ready-made protein shakes. It suggests what to cook for lunch and dinner, plans your week, writes your grocery list, and estimates calories and protein from a photo of your plate. Friends can cheer you on, and the app sends the occasional sweet, funny nudge along the way.</p>
+    <div class="url">
+      <code id="app-url">https://shakeshake-cutiermn.vercel.app</code>
+      <button class="btn" id="copy-url" type="button">Copy link</button>
+    </div>
+    <p class="muted" style="font-size:0.9rem">Invite-only for now. Best on iPhone, added to your Home Screen.</p>
+  </section>
+
+  <section aria-labelledby="what">
+    <h2 id="what">What it does</h2>
+    <div class="features">
+      <div class="feature"><span class="ic" aria-hidden="true">🍛</span><div><h3>Lunch & dinner ideas</h3><p>Protein-rich South Indian recipes made for your diet, spice level, cooking time and allergies. Don't fancy it? Swap it.</p></div></div>
+      <div class="feature"><span class="ic" aria-hidden="true">🗓️</span><div><h3>Week plan & groceries</h3><p>Seven days of lunches and dinners in one tap, and a shopping list grouped by aisle that you can send on WhatsApp.</p></div></div>
+      <div class="feature"><span class="ic" aria-hidden="true">📸</span><div><h3>Snap your plate</h3><p>Take a photo and get a calorie and protein range. You check it and correct it before it's saved.</p></div></div>
+      <div class="feature"><span class="ic" aria-hidden="true">📈</span><div><h3>Eaten vs burned</h3><p>Add the active calories from your Oura (or any tracker) and see today's balance and your last 7 days.</p></div></div>
+      <div class="feature"><span class="ic" aria-hidden="true">👯</span><div><h3>Friends & a fair leaderboard</h3><p>See friends' meals, react with ❤️ 🔥 💪 😋, and compete on points based on your own goals.</p></div></div>
+      <div class="feature"><span class="ic" aria-hidden="true">💌</span><div><h3>Little love notes</h3><p>Reminders, cheers and gentle jokes. At most 4 a day, never between 10 pm and 7 am.</p></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="start">
+    <h2 id="start">Getting started (about 5 minutes)</h2>
+    <ol class="steps">
+      <li><div><h3>Open the app on your iPhone in Safari</h3><p>Tap the invite link a friend sent you, or open the link above.</p></div></li>
+      <li><div><h3>Enter your email, then the code</h3><p>Tap <b>Send me a code</b>. Check your email (and spam) for a 6-digit code and type it in. No password needed, ever.</p></div></li>
+      <li><div><h3>New here? Add your invite code</h3><p>If the app asks for one, it's a short code of letters and numbers like <b>K7QM4XPA</b>. The friend who invited you can make one in <b>Me → Friends → Create invite link</b>. If you opened their link, it's filled in for you.</p></div></li>
+      <li><div><h3>Set yourself up</h3><p>Five quick screens: your name and avatar, body and goal, food you like (and allergies), your daily targets, and your privacy choices. The app suggests calorie and protein ranges; you can change them.</p></div></li>
+      <li><div><h3>Add it to your Home Screen</h3><p>In Safari tap <b>Share ⬆️ → Add to Home Screen</b>. From now on, open Shake Shake from its icon.</p></div></li>
+      <li><div><h3>Turn on reminders</h3><p>Open the app from the Home Screen and tap <b>Turn on reminders</b> on the Today screen. iPhone only allows this for Home Screen apps (iOS 16.4 or later).</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="tabs">
+    <h2 id="tabs">Finding your way</h2>
+    <p class="muted">Five tabs along the bottom of the screen:</p>
+    <div class="tabs" role="list">
+      <div role="listitem"><span aria-hidden="true">🍛</span>Today<small>Ideas & progress</small></div>
+      <div role="listitem"><span aria-hidden="true">🗓️</span>Plan<small>Your week</small></div>
+      <div role="listitem"><span aria-hidden="true">📸</span>Log<small>Add a meal</small></div>
+      <div role="listitem"><span aria-hidden="true">👯</span>Friends<small>Feed & board</small></div>
+      <div role="listitem"><span aria-hidden="true">📈</span>Me<small>Balance & settings</small></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="day">
+    <h2 id="day">A normal day</h2>
+    <div class="panel">
+      <h3>🍛 Pick lunch and dinner (Today)</h3>
+      <ul>
+        <li>Tap <b>Suggest lunch</b>. A recipe idea appears in about 30 seconds.</li>
+        <li>Tap <b>Swap</b> for three alternatives: <i>more protein</i>, <i>faster</i>, <i>different protein</i> or <i>veg tonight</i>.</li>
+        <li>Tap <b>Recipe</b> to see ingredients, steps and the protein per serving.</li>
+        <li>Tap <b>Choose</b> when you've decided. You'll get a "show me your plate" reminder about 30 minutes after your usual meal time.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>📸 Log what you actually ate (Log)</h3>
+      <ul>
+        <li>Take a photo of the plate (plate only, no faces). Location data is removed before it's saved.</li>
+        <li>Tap <b>✨ Estimate</b> for a calorie and protein range, or just type the numbers yourself.</li>
+        <li>Fix anything that looks off, then tap <b>Save meal</b>. Tick <b>Keep this meal private 🔒</b> if friends shouldn't see it.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>📈 Add your burn (Me)</h3>
+      <ul>
+        <li>Type today's <b>active calories</b> from your Oura app (or any tracker) and tap <b>Save</b>.</li>
+        <li>See eaten vs burned, protein vs target, and a 7-day view. Numbers marked "estimated" are approximate.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="week">
+    <h2 id="week">Once a week</h2>
+    <div class="panel">
+      <ul>
+        <li><b>Plan</b> tab → <b>✨ Plan my week</b> fills 7 lunches and 7 dinners (no dish more than twice). Open any day to swap or choose a meal, and set how many people you're cooking for.</li>
+        <li>Tap <b>🛒 Grocery list for this week</b>. Items are grouped by aisle (meat & fish, dairy, pulses, vegetables…). Tick things off as you shop, show or hide pantry staples, and tap <b>Share 📤</b> to send it on WhatsApp.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="friends">
+    <h2 id="friends">Friends & the leaderboard</h2>
+    <p>Invite friends from <b>Me → Friends → Create invite link</b>, or swap 8-letter friend codes. You'll see each other's shared meals in the <b>Friends</b> tab, where you can react, comment, or report anything unkind.</p>
+    <p class="muted">Points are a percentage of <b>your own</b> goals, so everyone competes fairly whatever their size:</p>
+    <div class="points">
+      <div><b>up to 200</b><small>🏃 1 point per 1% of your active-calorie goal</small></div>
+      <div><b>up to 100</b><small>💪 1 point per 1% of your protein target</small></div>
+      <div><b>up to 50</b><small>📸 20 per photo-logged meal (2 a day) + 10 for a streak</small></div>
+    </div>
+    <p class="muted" style="font-size:0.9rem">Up to 350 points a day. The board resets every Monday at midnight (India time), and goals are locked for the week.</p>
+  </section>
+
+  <section aria-labelledby="numbers">
+    <h2 id="numbers">What the labels on the numbers mean</h2>
+    <div class="badges">
+      <div class="badge-row"><span><span class="pill ok">Calculated</span></span><p>Worked out from a public food database (USDA FoodData Central) using the recipe's raw ingredient weights.</p></div>
+      <div class="badge-row"><span><span class="pill est">≈ Partly calculated</span></span><p>Some ingredients aren't in the database (for example paneer or curry leaves), so it's approximate.</p></div>
+      <div class="badge-row"><span><span class="pill est">AI estimate</span></span><p>Mostly the AI's guess. Treat it as a rough idea.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="privacy">
+    <h2 id="privacy">Your privacy, your choice</h2>
+    <div class="panel">
+      <ul>
+        <li>Each choice is a separate switch in <b>Me → ⚙️ Settings</b>: storing health details, AI help, sharing meals with friends, and reminders.</li>
+        <li><b>AI help uses Google Gemini on its free tier.</b> Google says content sent on the free tier may be used to improve its products. We never send your name or email. Turn AI off any time; typing meals in yourself always works.</li>
+        <li>Your weight, age, height and allergies are never shown to friends.</li>
+        <li>Download all your data or delete your account (and photos) from Settings. Plate photos are deleted automatically after 90 days.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">Quick help</h2>
+    <div>
+      <details><summary>I didn't get the code</summary><p>Wait a minute and check your spam folder. On the code screen, tap <b>Send a new code</b>. Make sure the email is spelled correctly (tap <b>Change email</b>).</p></details>
+      <details><summary>It says I need an invite code</summary><p>That email isn't a member yet. Ask the friend who invited you to send an invite link from <b>Me → Friends</b>; opening it fills in the code.</p></details>
+      <details><summary>Suggestions say AI is off</summary><p>Go to <b>Me → ⚙️ Settings → Privacy choices</b> and switch on <b>AI help</b>. You can still log meals by hand without it.</p></details>
+      <details><summary>The idea is taking a while</summary><p>A new recipe can take up to about 30 seconds. If the AI is busy or has reached its daily limit, the app tells you and offers a saved recipe instead.</p></details>
+      <details><summary>I'm not getting reminders</summary><p>Open Shake Shake from its Home Screen icon (not Safari) and tap <b>Turn on reminders</b> in Settings. Reminders don't arrive between 10 pm and 7 am, and anything beyond 4 a day waits in your 💌 messages.</p></details>
+      <details><summary>The calorie number looks wrong</summary><p>Photo estimates are approximate. Correct the numbers before saving; you can delete a meal later from the <b>Me</b> tab.</p></details>
+    </div>
+  </section>
+
+  <p class="disclaimer">Shake Shake gives suggestions from published formulas and a food database. It is not medical advice. If you have a medical condition, are pregnant or breastfeeding, or have a history of disordered eating, please talk to a doctor or dietitian.</p>
+
+</div>
+
+<script>
+  document.getElementById("copy-url").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const text = document.getElementById("app-url").textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "Copied";
+    } catch {
+      const r = document.createRange();
+      r.selectNodeContents(document.getElementById("app-url"));
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Selected — copy it";
+    }
+    setTimeout(() => (btn.textContent = "Copy link"), 2000);
+  });
+</script>
