@@ -116,6 +116,9 @@ describe("AI gateway (M2-02)", () => {
     expect(await runAi(mk({ consumeQuota: async () => "user_limit" }, []), args)).toEqual({ ok: false, reason: "quota_user" });
     expect(await runAi(mk({ consumeQuota: async () => "global_limit" }, []), args)).toEqual({ ok: false, reason: "quota_global" });
   });
+  it("maps an AI timeout to a friendly 'timeout' failure", async () => {
+    expect(await runAi(mk({}, [new AiProviderError("timed out", 504)]), args)).toEqual({ ok: false, reason: "timeout" });
+  });
   it("handles 429 gracefully", async () => {
     expect(await runAi(mk({}, [new AiProviderError("slow down", 429)]), args)).toEqual({ ok: false, reason: "rate_limited" });
   });

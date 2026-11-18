@@ -37,7 +37,10 @@ Store the files somewhere private (they contain health data). Photos are not inc
 
 **Restore:** create a new project, run the schema dump, then the data dump; update Vercel env vars.
 
-## 4. AI quota exhausted / Gemini errors
+## 4. AI quota exhausted / Gemini errors / "no response" on suggestions
+**First, open `https://YOUR-APP/api/health` while signed in as admin.** It shows which settings are missing (never their values), whether the database answers, whether your AI consent is on, and a timed test call to Gemini with its exact error (e.g. wrong model name, quota, invalid key). Vercel → Project → **Logs** shows lines tagged `[ai]`, `[meals]` and `[action]` for every suggestion.
+Optional speed-up: set `GEMINI_THINKING_LEVEL=LOW` (or `MINIMAL`) in Vercel **only if your model supports thinking levels** — otherwise the API rejects requests. Requests are capped at `AI_TIMEOUT_MS` (default 45000).
+
 The app degrades automatically: users see a friendly message and saved recipes; manual logging always works. Check `/admin` → "AI calls today". Raise or lower `AI_DAILY_CALLS_PER_USER` / `AI_GLOBAL_DAILY_CAP` in Vercel env vars (redeploy).
 
 ## 5. Reminders not arriving
