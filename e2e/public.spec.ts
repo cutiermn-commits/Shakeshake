@@ -7,7 +7,7 @@ test("landing, privacy and login render without horizontal scroll", async ({ pag
     expect(overflow, `${path} overflows horizontally`).toBeLessThanOrEqual(0);
   }
   await page.goto("/invite/abcd2345");
-  await expect(page.getByLabel(/Invite code/)).toHaveValue("ABCD2345");
+  await expect(page.getByText(/joining with invite/)).toContainText("ABCD2345");
 });
 
 test("disclaimer and AI data-use disclosure are visible (M6-02)", async ({ page }) => {

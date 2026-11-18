@@ -6,9 +6,18 @@
 
 1. **Supabase** — create a Free project (pick the region closest to India). In *Project Settings → API Keys* copy the **publishable** key and the **secret** key.
 2. **Database** — open *SQL Editor → New query*, paste the whole of `supabase/setup.sql` (all migrations in one file) and press **Run**. Expect "Success. No rows returned". Or with the Supabase CLI: `supabase link` then `supabase db push`.
-3. **Auth** — *Authentication → URL Configuration*: **Site URL** = your permanent Vercel address (Settings → Domains, not the per-deployment URL). **Redirect URLs** → add `https://YOUR-APP/**` (the sign-in link returns to `/auth/confirm?next=…`, so the query string must be allowed).
-   *Default email (no SMTP):* Supabase sends a "Sign in" **link** only, and the template can't be edited without custom SMTP (observed in the dashboard, 2026-11-17). The app handles this link (`/auth/confirm?code=…`). It must be opened **in the same browser that requested it** — on iPhone, request it in Safari and open the email in Mail; it opens in Safari. ASSUMPTION (NOT VERIFIED): an iPhone Home Screen app may keep its own sign-in separate from Safari, in which case you'd sign in once inside the Home Screen app using a 6-digit code — which needs custom SMTP so the template can include `{{ .Token }}`.
-   ⚠️ Supabase's built-in email sender is rate-limited and meant for testing (NOT VERIFIED exact limit — check *Auth → Rate limits*). For friends, configure a free SMTP provider (*Authentication → Emails → Set up SMTP*), then add `Your code: {{ .Token }}` to the Magic link template.
+3. **Auth (sign-in by 6-digit code)** — the app signs people in with **email → code** (D-030).
+   - *URL Configuration*: **Site URL** = your permanent Vercel address; **Redirect URLs** → add `https://YOUR-APP/**`.
+   - **Custom SMTP is required for the code** (without it Supabase sends only a link and the template can't be edited). Using your Gmail (DOCUMENTED by Google: SMTP `smtp.gmail.com`, port `465`, your full Gmail address as username, an **App password** as password; App passwords need 2-Step Verification — https://myaccount.google.com/apppasswords):
+     1. Google Account → Security → turn on **2-Step Verification**, then create an **App password** (name it "Shake Shake"). Copy the 16-character password.
+     2. Supabase → *Authentication → Emails → Set up SMTP*: enable custom SMTP; Sender email = your Gmail; Sender name = `Shake Shake`; Host `smtp.gmail.com`; Port `465`; Username = your Gmail; Password = the app password. Save.
+     3. *Authentication → Emails → Magic link or OTP* (now editable): set Subject `Your Shake Shake code` and Body:
+        ```html
+        <h2>Your Shake Shake code</h2>
+        <p style="font-size:28px;letter-spacing:6px"><b>{{ .Token }}</b></p>
+        <p>Enter this code in the app. It expires shortly and can be used once.</p>
+        ```
+   - Until SMTP is set up, the email contains a **Sign in** link instead; tapping it on the same phone also works (`/auth/confirm`).
 4. **Gemini** — in Google AI Studio, check which Flash-class model your project can use for free and its daily limit (O-003). You'll set `GEMINI_MODEL` and `AI_GLOBAL_DAILY_CAP` from that.
 5. **Web Push keys** — run `npx web-push generate-vapid-keys` locally.
 6. **Vercel** — import the GitHub repo, add the env vars from `.env.example` (*Settings → Environment Variables*), deploy.

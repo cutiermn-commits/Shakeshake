@@ -25,17 +25,12 @@ async function latestCode(request: import("@playwright/test").APIRequestContext)
 }
 
 test("sign in → onboard → log a manual meal → see it on the dashboard", async ({ page, request }) => {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(process.env.E2E_EMAIL!);
-  if (process.env.E2E_INVITE) await page.getByLabel(/Invite code/).fill(process.env.E2E_INVITE);
-  await page.getByRole("button", { name: /Email me a code/ }).click();
+  await page.goto(process.env.E2E_INVITE ? `/invite/${process.env.E2E_INVITE}` : "/login");
+  await page.getByLabel("Your email").fill(process.env.E2E_EMAIL!);
+  await page.getByRole("button", { name: /Send me a code/ }).click();
   await page.getByLabel("Code").fill(await latestCode(request));
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  if (page.url().includes("/welcome")) {
-    await page.getByLabel(/call you/).fill("E2E Tester");
-    await page.getByRole("button", { name: /Join/ }).click();
-  }
   if (page.url().includes("/onboarding")) {
     for (let i = 0; i < 4; i++) await page.getByRole("button", { name: "Next" }).click();
     await page.getByText("Store my health details").click();

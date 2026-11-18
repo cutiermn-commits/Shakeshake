@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { afterSignIn } from "@/lib/server/signin";
 
 /**
  * Sign-in link landing page. Handles both link styles:
@@ -10,14 +11,13 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/today";
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/today";
+  const invite = searchParams.get("invite");
   const supabase = await createClient();
 
   const code = searchParams.get("code");
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(`${origin}${safeNext}`);
+    if (!error) return NextResponse.redirect(`${origin}${await afterSignIn(supabase, invite)}`);
     return NextResponse.redirect(`${origin}/login?error=browser`);
   }
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
-    if (!error) return NextResponse.redirect(`${origin}${safeNext}`);
+    if (!error) return NextResponse.redirect(`${origin}${await afterSignIn(supabase, invite)}`);
   }
   return NextResponse.redirect(`${origin}/login?error=link`);
 }
