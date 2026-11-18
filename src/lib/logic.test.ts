@@ -119,6 +119,9 @@ describe("AI gateway (M2-02)", () => {
   it("maps an AI timeout to a friendly 'timeout' failure", async () => {
     expect(await runAi(mk({}, [new AiProviderError("timed out", 504)]), args)).toEqual({ ok: false, reason: "timeout" });
   });
+  it("maps a busy model (503) to a friendly 'busy' failure", async () => {
+    expect(await runAi(mk({}, [new AiProviderError("high demand", 503)]), args)).toEqual({ ok: false, reason: "busy" });
+  });
   it("handles 429 gracefully", async () => {
     expect(await runAi(mk({}, [new AiProviderError("slow down", 429)]), args)).toEqual({ ok: false, reason: "rate_limited" });
   });

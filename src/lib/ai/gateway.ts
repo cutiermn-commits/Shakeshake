@@ -45,6 +45,7 @@ export type FailReason =
   | "rate_limited"
   | "invalid_output"
   | "timeout"
+  | "busy"
   | "provider_error";
 
 export type AiResult<T> = { ok: true; data: T; attempts: number } | { ok: false; reason: FailReason; detail?: string };
@@ -86,6 +87,7 @@ export async function runAi<S extends z.ZodType>(deps: GatewayDeps, args: RunArg
       const status = e instanceof AiProviderError ? e.status : undefined;
       if (status === 429) return done("rate_limited"), { ok: false, reason: "rate_limited" };
       if (status === 504) return done("timeout"), { ok: false, reason: "timeout" };
+      if (status === 503 || status === 500 || status === 502) return done("busy"), { ok: false, reason: "busy" };
       return done("provider_error"), { ok: false, reason: "provider_error", detail: (e as Error).message };
     }
     try {
@@ -109,6 +111,8 @@ export function failureCopy(reason: FailReason): string {
     case "quota_global":
     case "rate_limited":
       return "Too many recipe requests today! We'll be back tomorrow, fresher than idli batter.";
+    case "busy":
+      return "Google's AI chef is swamped right now (very high demand). Try again in a few minutes — or log your meal manually meanwhile.";
     case "timeout":
       return "The AI chef is taking too long today. Try again in a minute, or log it manually.";
     case "not_configured":
