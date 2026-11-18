@@ -149,7 +149,7 @@ export async function cachedRecipes(supabase: SupabaseClient, mealType: MealType
     .map((x) => x.r.id);
 }
 
-export type GenOutcome = { ids: string[]; source: "ai" | "cache"; failure?: AiResult<unknown> & { ok: false } };
+export type GenOutcome = { ids: string[]; source: "ai" | "cache"; failure?: AiResult<unknown> & { ok: false }; filteredOut?: number };
 
 async function generate(
   supabase: SupabaseClient,
@@ -162,17 +162,29 @@ async function generate(
   want: number,
   exclude: string[] = [],
 ): Promise<GenOutcome> {
+  const started = Date.now();
   const res = await runAi(gatewayDeps(supabase), { userId: uid, kind, prompt, schema: RecipeListSchema });
+  let filteredOut = 0;
   if (res.ok) {
     const matcher = await loadMatcher(supabase);
     const recipes: AiRecipe[] = res.data.recipes.map((r) => ({ ...r, meal_type: mealType }));
-    const { accepted } = processRecipes(recipes, matcher, { allergies: health?.allergies ?? [], dislikes: health?.dislikes ?? [], dietType: profile.diet_type });
+    const { accepted, rejected } = processRecipes(recipes, matcher, { allergies: health?.allergies ?? [], dislikes: health?.dislikes ?? [], dietType: profile.diet_type });
+    filteredOut = rejected.length;
     const ids: string[] = [];
-    for (const p of accepted.slice(0, want)) ids.push(await saveRecipe(supabase, uid, p));
+    for (const p of accepted.slice(0, want)) {
+      try {
+        ids.push(await saveRecipe(supabase, uid, p));
+      } catch (e) {
+        console.error(`[meals] saveRecipe failed kind=${kind}`, e);
+      }
+    }
+    console.info(`[meals] ${kind} ai ok ms=${Date.now() - started} got=${recipes.length} rejected=${rejected.length} saved=${ids.length}`);
     if (ids.length) return { ids, source: "ai" };
+  } else {
+    console.warn(`[meals] ${kind} ai failed reason=${res.reason} ms=${Date.now() - started} ${res.detail ?? ""}`.trim());
   }
   const ids = await cachedRecipes(supabase, mealType, profile, health, exclude, want);
-  return { ids, source: "cache", failure: res.ok ? undefined : res };
+  return { ids, source: "cache", failure: res.ok ? undefined : res, filteredOut };
 }
 
 export async function ensurePlan(supabase: SupabaseClient, uid: string, date: string): Promise<string> {
@@ -193,7 +205,13 @@ export async function suggestFor(supabase: SupabaseClient, uid: string, profile:
   const out = await generate(supabase, uid, "suggest", suggestionPrompt(ctx, mealType, 2), mealType, profile, health, 1);
   if (!out.ids.length) return out;
   const planId = await ensurePlan(supabase, uid, date);
-  await supabase.from("meal_plan_slots").upsert({ plan_id: planId, date, meal_type: mealType, recipe_id: out.ids[0], status: "planned" }, { onConflict: "plan_id,date,meal_type" });
+  const { error } = await supabase
+    .from("meal_plan_slots")
+    .upsert({ plan_id: planId, date, meal_type: mealType, recipe_id: out.ids[0], status: "planned" }, { onConflict: "plan_id,date,meal_type" });
+  if (error) {
+    console.error("[meals] saving the day's slot failed", error);
+    throw new Error(`slot upsert failed: ${error.message}`);
+  }
   return out;
 }
 
@@ -227,7 +245,10 @@ export async function planWeek(supabase: SupabaseClient, uid: string, profile: P
       counts.set(id, (counts.get(id) ?? 0) + 1);
       slots.push({ plan_id: planId, date: addDays(ws, d), meal_type: mealType, recipe_id: id, status: "planned" });
     }
-    if (slots.length) await supabase.from("meal_plan_slots").upsert(slots, { onConflict: "plan_id,date,meal_type" });
+    if (slots.length) {
+      const { error } = await supabase.from("meal_plan_slots").upsert(slots, { onConflict: "plan_id,date,meal_type" });
+      if (error) throw new Error(`plan upsert failed: ${error.message}`);
+    }
   }
   return results;
 }

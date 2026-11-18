@@ -27,8 +27,12 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
   const run = (fn: () => Promise<{ ok: boolean; error?: string; note?: string }>) =>
     start(async () => {
       setMsg(null);
-      const r = await fn();
-      setMsg(r.ok ? (r.note ?? null) : (r.error ?? "Something went wrong."));
+      try {
+        const r = await fn();
+        setMsg(r.ok ? (r.note ?? null) : (r.error ?? "Something went wrong."));
+      } catch {
+        setMsg("Lost connection to the kitchen. Check your internet and try again.");
+      }
     });
 
   if (!slot?.recipe) {
@@ -37,7 +41,7 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
         <h2 className="h2">{label}</h2>
         <p className="muted mt-1">No idea yet — want one?</p>
         <button className="btn-primary mt-3 w-full" disabled={pending} onClick={() => run(() => suggestMeal(mealType, date))}>
-          {pending ? "Cooking up an idea…" : `Suggest ${label.toLowerCase()}`}
+          {pending ? "Cooking up an idea… (up to ~30 s)" : `Suggest ${label.toLowerCase()}`}
         </button>
         {msg ? <p role="status" className="mt-2 text-sm text-ink-2">{msg}</p> : null}
       </section>
@@ -72,11 +76,15 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
               <button key={k} className="chip" disabled={pending} onClick={() => start(async () => {
                 setMsg(null);
                 setOptions(null);
-                const res = await getSwapOptions(slot.id, k);
-                if (res.ok) {
-                  setOptions(res.data ?? []);
-                  setMsg(res.note ?? null);
-                } else setMsg(res.error);
+                try {
+                  const res = await getSwapOptions(slot.id, k);
+                  if (res.ok) {
+                    setOptions(res.data ?? []);
+                    setMsg(res.note ?? null);
+                  } else setMsg(res.error);
+                } catch {
+                  setMsg("Lost connection to the kitchen. Check your internet and try again.");
+                }
               })}>{l}</button>
             ))}
           </div>
