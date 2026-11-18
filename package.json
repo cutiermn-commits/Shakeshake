@@ -13,7 +13,8 @@
     "gen:messages": "node scripts/gen-messages.mjs",
     "gen:foods": "node scripts/build-foods.mts",
     "format": "prettier --write .",
-    "gen:setup": "node scripts/gen-setup.mjs"
+    "gen:setup": "node scripts/gen-setup.mjs",
+    "gen:recipes": "tsx scripts/build-recipe-library.mts"
   },
   "dependencies": {
     "@google/genai": "^3.4.0",
@@ -38,6 +39,7 @@
     "eslint-config-next": "16.4.6",
     "prettier": "^3.10.1",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"
   },
