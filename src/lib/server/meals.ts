@@ -127,26 +127,48 @@ export async function saveRecipe(supabase: SupabaseClient, uid: string, p: Proce
  * Fallback when AI is unavailable (ARCHITECTURE §6.1 step 3): reuse cached recipes that fit the
  * diet and are safe for the user's allergies. Repeats cost zero quota.
  */
-export async function cachedRecipes(supabase: SupabaseClient, mealType: MealType, profile: Profile, health: HealthProfile | null, exclude: string[] = [], limit = 3): Promise<string[]> {
+export type CachePreference = "more_protein" | "faster" | "different_protein" | "veg" | "any";
+
+/**
+ * Fallback when AI is unavailable (ARCHITECTURE §6.1 step 3, D-031): pick from saved recipes — the
+ * built-in library plus earlier AI recipes — that fit the diet and are safe for allergies/dislikes.
+ * Avoids recently planned dishes; honours swap reasons; relaxes cooking time if nothing fits.
+ */
+export async function cachedRecipes(
+  supabase: SupabaseClient,
+  mealType: MealType,
+  profile: Profile,
+  health: HealthProfile | null,
+  exclude: string[] = [],
+  limit = 3,
+  opts: { prefer?: CachePreference; recentTitles?: string[]; original?: { protein: number; minutes: number } | null } = {},
+): Promise<string[]> {
   const diets = profile.diet_type === "veg" ? ["veg"] : profile.diet_type === "egg" ? ["veg", "egg"] : ["veg", "egg", "nonveg"];
   const { data } = await supabase
     .from("recipes")
-    .select("id, title, recipe_ingredients(raw_name)")
+    .select("id, title, cook_minutes, per_serving_protein_g, recipe_ingredients(raw_name)")
     .eq("meal_type", mealType)
     .in("diet_type", diets)
-    .lte("cook_minutes", profile.max_cook_minutes)
     .order("created_at", { ascending: false })
-    .limit(60);
+    .limit(300);
   const { isSafe } = await import("@/lib/nutrition/allergy");
-  const ok = ((data ?? []) as { id: string; title: string; recipe_ingredients: { raw_name: string }[] }[]).filter(
+  type Row = { id: string; title: string; cook_minutes: number; per_serving_protein_g: number; recipe_ingredients: { raw_name: string }[] };
+  const recent = new Set((opts.recentTitles ?? []).map((t) => t.toLowerCase()));
+  const safe = ((data ?? []) as Row[]).filter(
     (r) => !exclude.includes(r.id) && isSafe({ title: r.title, ingredients: r.recipe_ingredients.map((i) => ({ name: i.raw_name })) }, health?.allergies ?? [], health?.dislikes ?? []),
   );
-  // simple shuffle for variety
-  return ok
-    .map((r) => ({ r, k: Math.random() }))
-    .sort((a, b) => a.k - b.k)
-    .slice(0, limit)
-    .map((x) => x.r.id);
+  const fresh = safe.filter((r) => !recent.has(r.title.toLowerCase()));
+  let pool = (fresh.length >= limit ? fresh : safe).filter((r) => r.cook_minutes <= profile.max_cook_minutes);
+  if (pool.length < limit) pool = fresh.length >= limit ? fresh : safe; // nothing fits the usual time → relax it
+  const o = opts.original;
+  if (opts.prefer === "more_protein" && o) pool = pool.filter((r) => Number(r.per_serving_protein_g) > o.protein).sort((a, b) => Number(b.per_serving_protein_g) - Number(a.per_serving_protein_g));
+  else if (opts.prefer === "faster" && o) pool = pool.filter((r) => r.cook_minutes < o.minutes).sort((a, b) => a.cook_minutes - b.cook_minutes);
+  else pool = pool.map((r) => ({ r, k: Math.random() })).sort((a, b) => a.k - b.k).map((x) => x.r); // shuffle for variety
+  if (opts.prefer === "more_protein" || opts.prefer === "faster") {
+    // keep some variety among the qualifying ones
+    pool = pool.slice(0, Math.max(limit * 2, limit)).map((r) => ({ r, k: Math.random() })).sort((a, b) => a.k - b.k).map((x) => x.r);
+  }
+  return pool.slice(0, limit).map((r) => r.id);
 }
 
 export type GenOutcome = { ids: string[]; source: "ai" | "cache"; failure?: AiResult<unknown> & { ok: false }; filteredOut?: number };
@@ -161,6 +183,7 @@ async function generate(
   health: HealthProfile | null,
   want: number,
   exclude: string[] = [],
+  cacheOpts: Parameters<typeof cachedRecipes>[6] = {},
 ): Promise<GenOutcome> {
   const started = Date.now();
   const res = await runAi(gatewayDeps(supabase), { userId: uid, kind, prompt, schema: RecipeListSchema });
@@ -183,7 +206,7 @@ async function generate(
   } else {
     console.warn(`[meals] ${kind} ai failed reason=${res.reason} ms=${Date.now() - started} ${res.detail ?? ""}`.trim());
   }
-  const ids = await cachedRecipes(supabase, mealType, profile, health, exclude, want);
+  const ids = await cachedRecipes(supabase, mealType, profile, health, exclude, want, cacheOpts);
   return { ids, source: "cache", failure: res.ok ? undefined : res, filteredOut };
 }
 
@@ -201,8 +224,9 @@ export async function ensurePlan(supabase: SupabaseClient, uid: string, date: st
 }
 
 export async function suggestFor(supabase: SupabaseClient, uid: string, profile: Profile, health: HealthProfile | null, targets: Targets | null, date: string, mealType: MealType) {
-  const ctx = promptContext(profile, health, targets, await recentTitles(supabase, uid));
-  const out = await generate(supabase, uid, "suggest", suggestionPrompt(ctx, mealType, 2), mealType, profile, health, 1);
+  const recent = await recentTitles(supabase, uid);
+  const ctx = promptContext(profile, health, targets, recent);
+  const out = await generate(supabase, uid, "suggest", suggestionPrompt(ctx, mealType, 2), mealType, profile, health, 1, [], { recentTitles: recent });
   if (!out.ids.length) return out;
   const planId = await ensurePlan(supabase, uid, date);
   const { error } = await supabase
@@ -216,9 +240,12 @@ export async function suggestFor(supabase: SupabaseClient, uid: string, profile:
 }
 
 export async function swapOptions(supabase: SupabaseClient, uid: string, profile: Profile, health: HealthProfile | null, targets: Targets | null, mealType: MealType, originalTitle: string, originalId: string | null, reason: SwapReason) {
-  const ctx = promptContext(profile, health, targets, await recentTitles(supabase, uid));
+  const recent = await recentTitles(supabase, uid);
+  const ctx = promptContext(profile, health, targets, recent);
+  const { data: orig } = originalId ? await supabase.from("recipes").select("per_serving_protein_g, cook_minutes").eq("id", originalId).maybeSingle() : { data: null };
+  const original = orig ? { protein: Number(orig.per_serving_protein_g), minutes: orig.cook_minutes as number } : null;
   const p = reason === "veg" ? { ...profile, diet_type: "veg" as const } : profile;
-  return generate(supabase, uid, "swap", swapPrompt(reason === "veg" ? { ...ctx, dietType: "veg" } : ctx, mealType, originalTitle, reason), mealType, p, health, 3, originalId ? [originalId] : []);
+  return generate(supabase, uid, "swap", swapPrompt(reason === "veg" ? { ...ctx, dietType: "veg" } : ctx, mealType, originalTitle, reason), mealType, p, health, 3, originalId ? [originalId] : [], { prefer: reason, recentTitles: recent, original });
 }
 
 /** 7-day plan (M4-01): one AI call per meal type; no dish > 2×/week (configurable). */
@@ -227,10 +254,11 @@ export const MAX_REPEATS_PER_WEEK = 2;
 export async function planWeek(supabase: SupabaseClient, uid: string, profile: Profile, health: HealthProfile | null, targets: Targets | null, anyDate: string) {
   const ws = weekStart(anyDate);
   const planId = await ensurePlan(supabase, uid, ws);
-  const ctx = promptContext(profile, health, targets, await recentTitles(supabase, uid));
+  const recent = await recentTitles(supabase, uid);
+  const ctx = promptContext(profile, health, targets, recent);
   const results: Record<MealType, GenOutcome> = {} as never;
   for (const mealType of ["lunch", "dinner"] as const) {
-    const out = await generate(supabase, uid, "plan", weekPlanPrompt(ctx, mealType), mealType, profile, health, 7);
+    const out = await generate(supabase, uid, "plan", weekPlanPrompt(ctx, mealType), mealType, profile, health, 7, [], { recentTitles: recent });
     results[mealType] = out;
     if (!out.ids.length) continue;
     const counts = new Map<string, number>();
