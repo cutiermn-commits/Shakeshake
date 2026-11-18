@@ -3,74 +3,72 @@
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { afterSignIn } from "@/lib/server/signin";
 
-export type FormState = { ok?: boolean; error?: string; step?: "email" | "code"; email?: string; invite?: string } | null;
+export type FormState = { ok?: boolean; error?: string; step?: "email" | "invite" | "code"; email?: string; invite?: string } | null;
 
-const EmailSchema = z.object({
-  email: z.email().max(254),
-  invite: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9]{6,16}$/)
-    .optional()
-    .or(z.literal("")),
-});
+const Email = z.email().max(254);
+const Invite = z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6,16}$/);
 
 /**
- * Step 1: send an email OTP / magic link (D-020). New accounts are only created when a valid
- * invite code is supplied (INVITE_ONLY, M1-01). The invite is re-checked and consumed in
- * redeem_invite() after sign-in — this pre-check just avoids creating orphan auth users.
+ * Sign-in step 1 (D-020, M1-01): email → one-time code.
+ * Existing members just get a code. A new email gets the "invite code" step (invite-only, D-002);
+ * an invite link pre-fills it so invitees never type it.
  */
 export async function sendCode(_prev: FormState, form: FormData): Promise<FormState> {
-  const parsed = EmailSchema.safeParse({ email: form.get("email"), invite: form.get("invite") ?? "" });
-  if (!parsed.success) return { error: "Please enter a valid email (and invite code, if you have one)." };
-  const { email, invite } = parsed.data;
+  const emailParsed = Email.safeParse(String(form.get("email") ?? "").trim().toLowerCase());
+  if (!emailParsed.success) return { step: "email", error: "Please enter a valid email address." };
+  const email = emailParsed.data;
+  const rawInvite = String(form.get("invite") ?? "").trim();
   const supabase = await createClient();
-  let shouldCreateUser = process.env.INVITE_ONLY === "false";
-  if (invite) {
-    const { data } = await supabase.rpc("invite_is_valid", { p_code: invite });
-    if (data !== true) return { error: "That invite code isn't valid or has expired." };
-    shouldCreateUser = true;
+
+  let invite: string | undefined;
+  if (rawInvite) {
+    const inv = Invite.safeParse(rawInvite);
+    const { data } = inv.success ? await supabase.rpc("invite_is_valid", { p_code: inv.data }) : { data: false };
+    if (data !== true) return { step: "invite", email, invite: rawInvite, error: "That invite code isn't valid or has expired. Ask the person who invited you for a new one." };
+    invite = inv.data;
   }
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      shouldCreateUser,
-      // After the link: new members go to /welcome to redeem the invite, others to /today.
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/confirm?next=${encodeURIComponent(invite ? `/welcome?invite=${invite}` : "/today")}`,
+      shouldCreateUser: !!invite || process.env.INVITE_ONLY === "false",
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/confirm${invite ? `?invite=${invite}` : ""}`,
     },
   });
   if (error) {
-    // Don't reveal whether an account exists.
-    if (/signups? not allowed|not found/i.test(error.message)) return { error: "We couldn't find an account for that email. New here? Add your invite code." };
-    return { error: "Couldn't send the code right now. Please try again in a minute." };
+    if (/signups? not allowed|not found|otp_disabled/i.test(`${error.message} ${(error as { code?: string }).code ?? ""}`)) {
+      // Email not registered yet → ask for the invite code.
+      return { step: "invite", email };
+    }
+    if (/rate|too many|seconds/i.test(error.message)) return { step: "email", email, error: "Too many requests — please wait a minute, then try again." };
+    console.error("[auth] signInWithOtp failed", error.message);
+    return { step: "email", email, error: "Couldn't send the code right now. Please try again in a minute." };
   }
-  return { ok: true, step: "code", email, invite: invite || undefined };
+  return { ok: true, step: "code", email, invite };
 }
 
+/** Step 2: verify the 6-digit code, then go straight into the app (or onboarding for new people). */
 export async function verifyCode(_prev: FormState, form: FormData): Promise<FormState> {
-  const email = String(form.get("email") ?? "");
-  const token = String(form.get("token") ?? "").replace(/\s/g, "");
-  const invite = String(form.get("invite") ?? "");
-  if (!/^\d{6,10}$/.test(token)) return { error: "Enter the code from your email.", step: "code", email, invite };
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const token = String(form.get("token") ?? "").replace(/\D/g, "");
+  const invite = String(form.get("invite") ?? "") || undefined;
+  if (!/^\d{6,10}$/.test(token)) return { step: "code", email, invite, error: "Enter the code from your email." };
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-  if (error) return { error: "That code didn't work — check it or request a new one.", step: "code", email, invite };
-  redirect(invite ? `/welcome?invite=${encodeURIComponent(invite)}` : "/today");
+  if (error) return { step: "code", email, invite, error: "That code didn't work or has expired. Check it, or tap “Send a new code”." };
+  redirect(await afterSignIn(supabase, invite));
 }
 
-const RedeemSchema = z.object({
-  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6,16}$/),
-  name: z.string().trim().min(1).max(40),
-});
-
+/** Fallback for a signed-in person without a profile whose invite failed (e.g. expired). */
 export async function redeemInvite(_prev: FormState, form: FormData): Promise<FormState> {
-  const parsed = RedeemSchema.safeParse({ code: form.get("code"), name: form.get("name") });
-  if (!parsed.success) return { error: "Please enter your name and a valid invite code." };
+  const code = Invite.safeParse(form.get("code"));
+  const name = z.string().trim().min(1).max(40).safeParse(form.get("name"));
+  if (!code.success || !name.success) return { error: "Please enter your name and the invite code you were given." };
   const supabase = await createClient();
-  const { error } = await supabase.rpc("redeem_invite", { p_code: parsed.data.code, p_display_name: parsed.data.name });
-  if (error) return { error: "That invite code isn't valid or has expired. Ask your friend for a new one." };
+  const { error } = await supabase.rpc("redeem_invite", { p_code: code.data, p_display_name: name.data });
+  if (error) return { error: "That invite code isn't valid or has expired. Ask the person who invited you for a new one." };
   redirect("/onboarding");
 }
 
@@ -78,4 +76,9 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+/** Single entry point for the login form: the submit button's `intent` picks the step. */
+export async function authFlow(prev: FormState, form: FormData): Promise<FormState> {
+  return form.get("intent") === "verify" ? verifyCode(prev, form) : sendCode(prev, form);
 }
