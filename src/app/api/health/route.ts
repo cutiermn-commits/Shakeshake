@@ -5,7 +5,7 @@ import { geminiProviderFromEnv, AI_TIMEOUT_MS } from "@/lib/ai/gemini";
 import { jsonSchemaFor } from "@/lib/ai/schemas";
 
 /**
- * Owner diagnostics: open /api/health in the browser while signed in as the admin.
+ * Diagnostics: open /api/health in the browser while signed in (any member; admins skip the quota).
  * Shows WHICH settings are present (never their values), database reachability, your AI consent,
  * today's AI usage and a tiny timed Gemini call. Does not count against the per-user AI quota.
  */
@@ -14,8 +14,8 @@ export async function GET() {
   const { data: claims } = await supabase.auth.getClaims();
   const role = (claims?.claims?.app_metadata as { role?: string } | undefined)?.role;
   if (!claims?.claims?.sub) return NextResponse.json({ error: "Sign in first, then open this page again." }, { status: 401 });
-  if (role !== "admin") return NextResponse.json({ error: "Admins only. See docs/RUNBOOK.md §1 step 8." }, { status: 403 });
   const uid = claims.claims.sub as string;
+  const isAdmin = role === "admin";
 
   const env = Object.fromEntries(
     ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "GEMINI_API_KEY", "GEMINI_MODEL", "AI_GLOBAL_DAILY_CAP", "CRON_SECRET", "NEXT_PUBLIC_APP_URL", "NEXT_PUBLIC_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"].map((k) => [
@@ -33,7 +33,15 @@ export async function GET() {
 
   let gemini: Record<string, unknown> = { configured: false };
   const provider = geminiProviderFromEnv();
-  if (provider) {
+  // Non-admins pay for the test call from their own daily AI allowance (abuse protection).
+  let quota = "ok";
+  if (provider && !isAdmin) {
+    const { data, error } = await supabase.rpc("consume_ai_quota", { p_kind: "suggest", p_user_limit: Number(process.env.AI_DAILY_CALLS_PER_USER ?? 15), p_global_limit: Number(process.env.AI_GLOBAL_DAILY_CAP ?? 200) });
+    quota = error ? `error: ${error.message}` : String(data);
+  }
+  if (provider && quota !== "ok") {
+    gemini = { configured: true, model: process.env.GEMINI_MODEL, ok: false, skipped: `test call not made (quota: ${quota})` };
+  } else if (provider) {
     const started = Date.now();
     try {
       const text = await provider.generateJson({
@@ -50,6 +58,7 @@ export async function GET() {
   return NextResponse.json(
     {
       checkedAt: new Date().toISOString(),
+      admin: isAdmin,
       env,
       database: { foodsRows: foods ?? null, error: foodsErr?.message ?? null },
       you: { onboarded: profile?.onboarded ?? null, diet: profile?.diet_type ?? null, aiConsent: consent?.granted ?? false, aiUsageRecent: usage ?? [] },
