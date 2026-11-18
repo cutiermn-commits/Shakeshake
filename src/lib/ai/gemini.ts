@@ -1,21 +1,24 @@
 import "server-only";
 import { ApiError, GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { AiProviderError, type AiProvider } from "./gateway";
+import { CallError, callWithFallback } from "./retry";
 
-/** Hard cap per AI request so the user always gets an answer (well inside Vercel's 300 s limit). */
+/** Overall cap per AI request, including retries, so the user always gets an answer (well inside Vercel's 300 s). */
 export const AI_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS ?? 45_000);
 
 /**
- * Gemini provider. Model name ALWAYS comes from env (GEMINI_MODEL) — never hard-coded
- * (ai-recipe-pipeline invariant 2). Structured output via responseMimeType + responseJsonSchema;
- * abortSignal / thinkingConfig fields verified in the installed @google/genai type definitions.
- * Optional GEMINI_THINKING_LEVEL (MINIMAL | LOW | MEDIUM | HIGH) trades reasoning for speed — only set
- * it if your model supports thinking levels (otherwise the API rejects the request).
+ * Gemini provider. Model names ALWAYS come from env, never hard-coded (ai-recipe-pipeline invariant 2):
+ *   GEMINI_MODEL            main model
+ *   GEMINI_FALLBACK_MODELS  optional, comma-separated backups tried when the main one is busy (503) or rate-limited (429)
+ * Busy models are retried once after a short pause (see retry.ts). Structured output via responseMimeType +
+ * responseJsonSchema; abortSignal / thinkingConfig verified in the installed @google/genai type definitions.
+ * Optional GEMINI_THINKING_LEVEL (MINIMAL | LOW | MEDIUM | HIGH) — only if your models support it.
  */
 export function geminiProviderFromEnv(): AiProvider | null {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const model = process.env.GEMINI_MODEL?.trim();
-  if (!apiKey || !model) return null;
+  const main = process.env.GEMINI_MODEL?.trim();
+  if (!apiKey || !main) return null;
+  const models = [main, ...(process.env.GEMINI_FALLBACK_MODELS ?? "").split(",").map((m) => m.trim()).filter(Boolean)].filter((m, i, a) => a.indexOf(m) === i);
   const ai = new GoogleGenAI({ apiKey });
   const level = process.env.GEMINI_THINKING_LEVEL?.trim().toUpperCase();
   const thinkingConfig = level && level in ThinkingLevel ? { thinkingLevel: ThinkingLevel[level as keyof typeof ThinkingLevel] } : undefined;
@@ -25,36 +28,40 @@ export function geminiProviderFromEnv(): AiProvider | null {
       const parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [];
       if (image) parts.push({ inlineData: { mimeType: image.mimeType, data: image.dataBase64 } });
       parts.push({ text: prompt });
-      const started = Date.now();
       try {
-        const res = await ai.models.generateContent({
-          model,
-          contents: [{ role: "user", parts }],
-          config: {
-            responseMimeType: "application/json",
-            responseJsonSchema: jsonSchema,
-            temperature: 0.8,
-            abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
-            ...(thinkingConfig ? { thinkingConfig } : {}),
+        const { value, model, attempts } = await callWithFallback(
+          models,
+          async (model, remainingMs) => {
+            try {
+              const res = await ai.models.generateContent({
+                model,
+                contents: [{ role: "user", parts }],
+                config: {
+                  responseMimeType: "application/json",
+                  responseJsonSchema: jsonSchema,
+                  temperature: 0.8,
+                  abortSignal: AbortSignal.timeout(remainingMs),
+                  ...(thinkingConfig ? { thinkingConfig } : {}),
+                },
+              });
+              if (!res.text) throw new CallError("empty response", 502);
+              return res.text;
+            } catch (e) {
+              if (e instanceof CallError) throw e;
+              const name = (e as Error).name;
+              if (name === "AbortError" || name === "TimeoutError") throw new CallError("timed out", 504);
+              if (e instanceof ApiError) throw new CallError(e.message, e.status);
+              throw new CallError((e as Error).message);
+            }
           },
-        });
-        const text = res.text;
-        console.info(`[ai] gemini ok model=${model} ms=${Date.now() - started} chars=${text?.length ?? 0}`);
-        if (!text) throw new AiProviderError("empty response");
-        return text;
+          { deadlineMs: AI_TIMEOUT_MS },
+        );
+        console.info(`[ai] gemini ok model=${model} tries=${attempts.length} ${attempts.map((a) => `${a.model}:${a.status ?? "ok"}:${a.ms}ms`).join(" ")}`);
+        return value;
       } catch (e) {
-        const ms = Date.now() - started;
-        if (e instanceof AiProviderError) throw e;
-        if ((e as Error).name === "AbortError" || (e as Error).name === "TimeoutError") {
-          console.error(`[ai] gemini timeout model=${model} ms=${ms}`);
-          throw new AiProviderError(`timed out after ${ms} ms`, 504);
-        }
-        if (e instanceof ApiError) {
-          console.error(`[ai] gemini api error model=${model} status=${e.status} ms=${ms} ${e.message.slice(0, 300)}`);
-          throw new AiProviderError(e.message, e.status);
-        }
-        console.error(`[ai] gemini error model=${model} ms=${ms}`, e);
-        throw new AiProviderError((e as Error).message);
+        const err = e as CallError;
+        console.error(`[ai] gemini failed status=${err.status ?? "?"} ${err.message.slice(0, 300)}`);
+        throw new AiProviderError(err.message, err.status);
       }
     },
   };

@@ -48,6 +48,7 @@ Store the files somewhere private (they contain health data). Photos are not inc
 
 ## 4. AI quota exhausted / Gemini errors / "no response" on suggestions
 **First, open `https://YOUR-APP/api/health` while signed in as admin.** It shows which settings are missing (never their values), whether the database answers, whether your AI consent is on, and a timed test call to Gemini with its exact error (e.g. wrong model name, quota, invalid key). Vercel → Project → **Logs** shows lines tagged `[ai]`, `[meals]` and `[action]` for every suggestion.
+**`gemini.status: 503` / "high demand"** means Google's model is overloaded (not a setup problem). The app retries once, then tries any models in `GEMINI_FALLBACK_MODELS` (comma-separated; pick other free models listed for your key in AI Studio), then shows a friendly "AI is busy" message.
 Optional speed-up: set `GEMINI_THINKING_LEVEL=LOW` (or `MINIMAL`) in Vercel **only if your model supports thinking levels** — otherwise the API rejects requests. Requests are capped at `AI_TIMEOUT_MS` (default 45000).
 
 The app degrades automatically: users see a friendly message and saved recipes; manual logging always works. Check `/admin` → "AI calls today". Raise or lower `AI_DAILY_CALLS_PER_USER` / `AI_GLOBAL_DAILY_CAP` in Vercel env vars (redeploy).
