@@ -10,6 +10,14 @@ describe("built-in recipe library (D-031)", () => {
     expect(RECIPE_LIBRARY.filter((r) => r.meal_type === "dinner").length).toBeGreaterThanOrEqual(14);
     expect(new Set(RECIPE_LIBRARY.map((r) => r.title)).size).toBe(RECIPE_LIBRARY.length);
   });
+  it("v2 covers sprouts, paneer, soya chunks and millets with enough recipes each", () => {
+    expect(RECIPE_LIBRARY.length).toBeGreaterThanOrEqual(80);
+    const has = (n: string) => RECIPE_LIBRARY.filter((r) => r.ingredients.some((i) => i.name === n)).length;
+    expect(has("mung sprouts")).toBeGreaterThanOrEqual(5);
+    expect(has("paneer")).toBeGreaterThanOrEqual(8);
+    expect(has("soya chunks")).toBeGreaterThanOrEqual(3);
+    expect(RECIPE_LIBRARY.filter((r) => r.ingredients.some((i) => /millet|ragi|jowar|quinoa/.test(i.name))).length).toBeGreaterThanOrEqual(8);
+  });
   it("offers every diet type", () => {
     for (const d of ["nonveg", "egg", "veg"] as const) expect(RECIPE_LIBRARY.some((r) => r.diet_type === d)).toBe(true);
   });

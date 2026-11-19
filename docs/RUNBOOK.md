@@ -54,7 +54,7 @@ Optional speed-up: set `GEMINI_THINKING_LEVEL=LOW` (or `MINIMAL`) in Vercel **on
 The app degrades automatically: users see a friendly message and saved recipes; manual logging always works. Check `/admin` → "AI calls today". Raise or lower `AI_DAILY_CALLS_PER_USER` / `AI_GLOBAL_DAILY_CAP` in Vercel env vars (redeploy).
 
 ### Built-in recipe library (D-031)
-When the AI can't answer, suggestions, swaps and week plans come from the built-in library (40 recipes). On an existing project, add it once by running `supabase/migrations/0005_seed_recipe_library.sql` in the SQL Editor (new projects get it from `supabase/setup.sql`). To add or edit recipes: change `src/lib/data/recipe-library.ts`, run `npm run gen:recipes` (it refuses recipes that can't be calculated from USDA data or contradict their diet label), then `npm run gen:setup`, and re-run 0005.
+When the AI can't answer, suggestions, swaps and week plans come from the built-in library (40 recipes). On an existing project, run the latest file in `supabase/updates/` once in the SQL Editor (currently `2026-11-19_recipe_library_v2.sql`: foods + 80-recipe library), or `supabase/migrations/0005_seed_recipe_library.sql` alone for the library (new projects get it from `supabase/setup.sql`). To add or edit recipes: change `src/lib/data/recipe-library.ts`, run `npm run gen:recipes` (it refuses recipes that can't be calculated from USDA data or contradict their diet label), then `npm run gen:setup`, and re-run 0005.
 
 ## 5. Reminders not arriving
 1. `select * from cron.job_run_details order by start_time desc limit 20;` — are runs succeeding?
