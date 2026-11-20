@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getConsents, getHealthProfile, getTargets, isAdmin, requireMember } from "@/lib/server/dal";
+import { CONSENT_VERSION, getConsents, getHealthProfile, getTargets, isAdmin, requireMember } from "@/lib/server/dal";
 import { PushSetup } from "@/components/PushSetup";
 import { DISCLAIMER, Page, PageSkeleton } from "@/components/ui";
 import { ConsentToggles, DangerZone, HealthForm, ProfileForm } from "./SettingsClient";
@@ -15,7 +15,7 @@ async function Settings() {
       <section className="card">
         <h2 className="h2 mb-3">Privacy choices</h2>
         <ConsentToggles consents={consents} />
-        <p className="muted mt-3 text-xs">Consent version 2026-11-17 · <Link href="/privacy" className="underline">Privacy notice</Link></p>
+        <p className="muted mt-3 text-xs">Consent version {CONSENT_VERSION} · <Link href="/privacy" className="underline">Privacy notice</Link></p>
       </section>
       <section className="card">
         <h2 className="h2">Reminders</h2>

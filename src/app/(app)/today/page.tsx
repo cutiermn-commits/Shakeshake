@@ -33,7 +33,7 @@ async function Today({ searchParams }: { searchParams: Promise<Record<string, st
         <p className="card border-warn text-sm">Your calorie target is below your estimated resting needs. Consider checking with a doctor or dietitian before going this low.</p>
       ) : null}
       {!consents.ai_processing ? (
-        <p className="card text-sm">AI recipe ideas are off. Switch on <Link className="underline" href="/settings">AI help in Settings</Link>, or browse saved recipes and log meals manually.</p>
+        <p className="card text-sm">AI recipe ideas are off or need your OK again (we added Groq · Qwen as the main AI). Review it in <Link className="underline" href="/settings">Settings → Privacy choices</Link>. Meanwhile ideas come from the built-in recipe library.</p>
       ) : null}
       <section className="card space-y-3" aria-label="Today so far">
         <Meter label="Protein" value={t.proteinG} min={targets?.protein_g_min ?? null} max={targets?.protein_g_max ?? null} />

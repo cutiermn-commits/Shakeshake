@@ -18,7 +18,8 @@
         <p>Enter this code in the app. It expires shortly and can be used once.</p>
         ```
    - Until SMTP is set up, the email contains a **Sign in** link instead; tapping it on the same phone also works (`/auth/confirm`).
-4. **Gemini** — in Google AI Studio, check which Flash-class model your project can use for free and its daily limit (O-003). You'll set `GEMINI_MODEL` and `AI_GLOBAL_DAILY_CAP` from that.
+4. **Groq (main AI, free)** — sign up at https://console.groq.com, create a key at https://console.groq.com/keys, and in Vercel add `GROQ_API_KEY` and `GROQ_MODEL=qwen/qwen3.8-27b` (check the model list first). Recommended: **Settings → Data Controls → enable Zero Data Retention** so Groq keeps no request logs at all (https://console.groq.com/docs/your-data).
+   **Gemini (backup AI)** — in Google AI Studio, check which Flash-class model your project can use for free and its daily limit (O-003). You'll set `GEMINI_MODEL` and `AI_GLOBAL_DAILY_CAP` from that.
 5. **Web Push keys** — run `npx web-push generate-vapid-keys` locally.
 6. **Vercel** — import the GitHub repo, add the env vars from `.env.example` (*Settings → Environment Variables*), deploy.
 7. **Scheduler** — run `supabase/cron.sql` in the SQL editor (enable `pg_cron` and `pg_net` first). Use a random `CRON_SECRET` of ≥ 32 characters (e.g. `openssl rand -hex 32`) in both Vercel and Vault.

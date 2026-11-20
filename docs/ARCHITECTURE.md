@@ -125,6 +125,9 @@ ai_usage(user_id, date, calls, kind)
 | E17 | Supabase SSR for Next.js: `@supabase/ssr`, publishable key, proxy refresh via `getClaims()`; never trust `getSession()` on the server | VERIFIED 2026-11-17 | https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs |
 | E18 | Gemini JS SDK `@google/genai` 3.4: `generateContent` config supports `responseMimeType` + `responseJsonSchema`; errors are `ApiError` with HTTP `status` | VERIFIED (installed package type definitions) | node_modules/@google/genai/dist/genai.d.ts |
 | E19 | USDA FDC datasets used: SR Legacy 2018-04 JSON (sha256 0fe8ae48…), Foundation 2026-10-29 JSON (sha256 dd414cc9…) | VERIFIED | https://fdc.nal.usda.gov/download-datasets |
+| E21 | Groq: OpenAI-compatible base URL `https://api.groq.com/openai/v1`; `qwen/qwen3.8-27b` (preview) accepts text + images, JSON-schema output (strict & best-effort), `reasoning_effort`; 429 + `retry-after` on rate limit; limits 30 RPM / 1K RPD / 8K TPM / 200K TPD | VERIFIED 2026-11-20 | https://console.groq.com/docs/openai · /structured-outputs · /models · /model/qwen/qwen3.8-27b · /rate-limits |
+| E22 | Groq retains no inference data by default; reliability/abuse logs up to 30 days; Zero Data Retention option | VERIFIED 2026-11-20 | https://console.groq.com/docs/your-data |
+| E23 | DeepSeek stores collected data on servers in the PRC | DOCUMENTED | DeepSeek privacy policy (2025-02-14 version) as quoted by multiple outlets — re-check before any use |
 | E20 | Gemini free-tier models/limits for this project | NOT VERIFIED | Docs moved to aistudio.google.com (not reachable from build env) — owner to check AI Studio (O-003) |
 
 ## 9. Alternatives considered

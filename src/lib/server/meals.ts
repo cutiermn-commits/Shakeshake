@@ -2,12 +2,12 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { FoodMatcher, type FoodRecord } from "@/lib/nutrition/match";
 import { runAi, type AiResult, type GatewayDeps } from "@/lib/ai/gateway";
-import { geminiProviderFromEnv } from "@/lib/ai/gemini";
+import { aiProviderFromEnv } from "@/lib/ai/providers";
 import { PROMPT_VERSION, RecipeListSchema, type AiRecipe } from "@/lib/ai/schemas";
 import { suggestionPrompt, swapPrompt, weekPlanPrompt, type PromptContext, type SwapReason } from "@/lib/ai/prompts";
 import { processRecipes, type ProcessedRecipe } from "@/lib/ai/postprocess";
 import { addDays, weekStart } from "@/lib/nutrition/balance";
-import type { HealthProfile, Profile, Targets } from "./dal";
+import { AI_CONSENT_MIN_VERSION, type HealthProfile, type Profile, type Targets } from "./dal";
 
 export type MealType = "lunch" | "dinner";
 
@@ -31,17 +31,19 @@ export function gatewayDeps(supabase: SupabaseClient): GatewayDeps {
   const perUser = Number(process.env.AI_DAILY_CALLS_PER_USER ?? 15);
   const global = Number(process.env.AI_GLOBAL_DAILY_CAP ?? 200);
   return {
-    provider: geminiProviderFromEnv(),
+    provider: aiProviderFromEnv(),
     async hasConsent(userId, purpose) {
       const { data } = await supabase
         .from("consents")
-        .select("granted")
+        .select("granted, version")
         .eq("user_id", userId)
         .eq("purpose", purpose)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return data?.granted === true;
+      if (data?.granted !== true) return false;
+      // AI consent must cover the current list of AI providers (D-033).
+      return purpose !== "ai_processing" || String(data.version) >= AI_CONSENT_MIN_VERSION;
     },
     async consumeQuota(_userId, kind) {
       const { data, error } = await supabase.rpc("consume_ai_quota", { p_kind: kind, p_user_limit: perUser, p_global_limit: global });
