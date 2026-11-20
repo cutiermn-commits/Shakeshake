@@ -10,7 +10,7 @@ export default function Privacy() {
   return (
     <main className="prose mx-auto max-w-xl px-5 py-10 text-ink">
       <h1 className="h1">Privacy & disclaimer</h1>
-      <p className="muted">Draft notice · version 2026-11-17 · pending legal review before public launch.</p>
+      <p className="muted">Draft notice · version 2026-11-20 · pending legal review before public launch.</p>
 
       <h2 className="h2 mt-6">Not medical advice</h2>
       <p>{DISCLAIMER}</p>
@@ -24,9 +24,9 @@ export default function Privacy() {
         <li><b>Notifications:</b> your browser&apos;s push subscription, if you turn reminders on.</li>
       </ul>
 
-      <h2 className="h2 mt-6">AI processing (Google Gemini)</h2>
+      <h2 className="h2 mt-6">AI processing (Groq · Qwen and Google Gemini)</h2>
       <p>
-        If — and only if — you switch on AI help, recipe requests and plate photos are sent to Google&apos;s Gemini API on its <b>free tier</b>. Google states that free-tier content may be used to improve its products. We send only what the task needs (diet, targets, allergies, dish names, the photo) — never your name, email or avatar. Please photograph the plate, not people. You can switch AI off at any time in Settings; manual logging always works.
+        If — and only if — you switch on AI help, recipe requests and plate photos are sent first to <b>Groq</b> (a US company) running Alibaba&apos;s open-weight <b>Qwen</b> model. Groq&apos;s published policy is that it does not retain request data by default, except temporary logs (up to 30 days) for troubleshooting or abuse checks. If Groq is busy, requests go to Google&apos;s Gemini API on its <b>free tier</b>; Google states that free-tier content may be used to improve its products. Nothing is sent to DeepSeek or to servers in China. We send only what the task needs (diet, targets, allergies, dish names, the photo) — never your name, email or avatar. Please photograph the plate, not people. You can switch AI off at any time in Settings; manual logging always works.
       </p>
 
       <h2 className="h2 mt-6">Where data lives</h2>

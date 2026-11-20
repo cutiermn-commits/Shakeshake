@@ -48,7 +48,12 @@ export type Targets = {
 };
 
 export type ConsentPurpose = "health_data" | "ai_processing" | "social_sharing" | "marketing_push";
-export const CONSENT_VERSION = "2026-11-17";
+export const CONSENT_VERSION = "2026-11-20";
+/**
+ * AI consent given before this version named only Google Gemini; from 2026-11-20 AI requests may also go to
+ * Groq (US) running Qwen (D-033). Older AI consents must be re-confirmed before AI is used (C5).
+ */
+export const AI_CONSENT_MIN_VERSION = "2026-11-20";
 
 /** Verified identity from the JWT (getClaims verifies the signature). Data Access Layer pattern. */
 export const getUserId = cache(async (): Promise<string | null> => {
@@ -111,7 +116,8 @@ export const getConsents = cache(async (): Promise<Record<ConsentPurpose, boolea
   const out: Record<ConsentPurpose, boolean> = { health_data: false, ai_processing: false, social_sharing: false, marketing_push: false };
   if (!uid) return out;
   const supabase = await createClient();
-  const { data } = await supabase.from("consents").select("purpose, granted, created_at").eq("user_id", uid).order("created_at", { ascending: true });
-  for (const row of (data ?? []) as { purpose: ConsentPurpose; granted: boolean }[]) out[row.purpose] = row.granted;
+  const { data } = await supabase.from("consents").select("purpose, granted, version, created_at").eq("user_id", uid).order("created_at", { ascending: true });
+  for (const row of (data ?? []) as { purpose: ConsentPurpose; granted: boolean; version: string }[])
+    out[row.purpose] = row.granted && (row.purpose !== "ai_processing" || String(row.version) >= AI_CONSENT_MIN_VERSION);
   return out;
 });

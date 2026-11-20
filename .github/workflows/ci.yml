@@ -19,6 +19,6 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: No server secrets in client bundle
-        run: "! grep -rlE 'SUPABASE_SECRET_KEY|GEMINI_API_KEY|VAPID_PRIVATE_KEY|CRON_SECRET' .next/static"
+        run: "! grep -rlE 'SUPABASE_SECRET_KEY|GEMINI_API_KEY|GROQ_API_KEY|VAPID_PRIVATE_KEY|CRON_SECRET' .next/static"
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --trace off

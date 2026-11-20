@@ -240,7 +240,7 @@ export function OnboardingForm({ displayName }: { displayName: string }) {
           <label className="card flex items-start gap-3">
             <input type="checkbox" name="consent_ai_processing" className="mt-1 size-5" />
             <span className="text-sm">
-              <b>Use AI (Google Gemini, free tier)</b> for recipe ideas and plate-photo estimates. Google states free-tier content <b>may be used to improve its products</b>. We never send your name or email. Optional — manual logging always works.
+              <b>Use AI</b> for recipe ideas and plate-photo estimates. Requests go first to <b>Groq</b> (a US company running Alibaba&apos;s open <b>Qwen</b> model; by its policy it doesn&apos;t keep requests by default) and, if it&apos;s busy, to <b>Google Gemini&apos;s free tier</b>, whose content <b>may be used to improve Google&apos;s products</b>. We never send your name or email. Optional — manual logging always works.
             </span>
           </label>
           <label className="card flex items-start gap-3">

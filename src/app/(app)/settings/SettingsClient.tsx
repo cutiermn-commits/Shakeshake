@@ -7,7 +7,7 @@ import type { ConsentPurpose } from "@/lib/server/dal";
 
 const CONSENT_TEXT: Record<ConsentPurpose, { title: string; body: string }> = {
   health_data: { title: "Store my health details", body: "Needed for target suggestions and allergy-safe recipes. Turning this off deletes your health profile." },
-  ai_processing: { title: "AI help (Google Gemini, free tier)", body: "Recipe ideas, swaps, weekly plans and plate estimates. Google states free-tier content may be used to improve its products. Off = manual only." },
+  ai_processing: { title: "AI help (Groq · Qwen, with Google Gemini as backup)", body: "Recipe ideas, swaps, weekly plans and plate estimates. Requests go first to Groq (US company, runs Alibaba's open Qwen model; by its policy doesn't keep requests by default) and, if busy, to Google Gemini's free tier (Google states free-tier content may be used to improve its products). We never send your name or email. Off = manual only." },
   social_sharing: { title: "Share my meals with friends", body: "Friends see meals you don't mark private, including calories and protein." },
   marketing_push: { title: "Reminders & messages by push", body: "Max 4 a day, quiet 10 pm–7 am. Messages always appear in your inbox too." },
 };

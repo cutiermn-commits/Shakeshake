@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { geminiProviderFromEnv, AI_TIMEOUT_MS } from "@/lib/ai/gemini";
+import { AI_TIMEOUT_MS } from "@/lib/ai/gemini";
+import { configuredProviders } from "@/lib/ai/providers";
 import { jsonSchemaFor } from "@/lib/ai/schemas";
 
 /**
  * Owner diagnostics: open /api/health in the browser while signed in as the admin.
  * Shows WHICH settings are present (never their values), database reachability, your AI consent,
- * today's AI usage and a tiny timed Gemini call. Does not count against the per-user AI quota.
+ * today's AI usage and a tiny timed test call to EACH configured AI provider (Groq, Gemini). Not counted in the quota.
  */
 export async function GET() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export async function GET() {
   const uid = claims.claims.sub as string;
 
   const env = Object.fromEntries(
-    ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "GEMINI_API_KEY", "GEMINI_MODEL", "AI_GLOBAL_DAILY_CAP", "CRON_SECRET", "NEXT_PUBLIC_APP_URL", "NEXT_PUBLIC_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"].map((k) => [
+    ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "GROQ_API_KEY", "GROQ_MODEL", "GEMINI_API_KEY", "GEMINI_MODEL", "AI_GLOBAL_DAILY_CAP", "CRON_SECRET", "NEXT_PUBLIC_APP_URL", "NEXT_PUBLIC_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"].map((k) => [
       k,
       process.env[k]?.trim() ? "set" : "MISSING",
     ]),
@@ -31,29 +32,27 @@ export async function GET() {
     supabase.from("profiles").select("onboarded, diet_type").eq("id", uid).maybeSingle(),
   ]);
 
-  let gemini: Record<string, unknown> = { configured: false };
-  const provider = geminiProviderFromEnv();
-  if (provider) {
+  const ai: Record<string, unknown>[] = [];
+  for (const { name, provider } of configuredProviders()) {
     const started = Date.now();
     try {
       const text = await provider.generateJson({
         prompt: 'Return JSON {"dish": "<one South Indian protein-rich dish name>"}.',
         jsonSchema: jsonSchemaFor(z.object({ dish: z.string() })),
       });
-      gemini = { configured: true, model: process.env.GEMINI_MODEL, ok: true, ms: Date.now() - started, sample: text.slice(0, 120), timeoutMs: AI_TIMEOUT_MS };
+      ai.push({ provider: name, ok: true, ms: Date.now() - started, sample: text.slice(0, 120) });
     } catch (e) {
       const err = e as { message?: string; status?: number };
-      gemini = { configured: true, model: process.env.GEMINI_MODEL, ok: false, ms: Date.now() - started, status: err.status ?? null, error: (err.message ?? "").slice(0, 400) };
+      ai.push({ provider: name, ok: false, ms: Date.now() - started, status: err.status ?? null, error: (err.message ?? "").slice(0, 400) });
     }
   }
-
   return NextResponse.json(
     {
       checkedAt: new Date().toISOString(),
       env,
       database: { foodsRows: foods ?? null, error: foodsErr?.message ?? null },
       you: { onboarded: profile?.onboarded ?? null, diet: profile?.diet_type ?? null, aiConsent: consent?.granted ?? false, aiUsageRecent: usage ?? [] },
-      gemini,
+      ai: { order: process.env.AI_PROVIDER_ORDER ?? "groq,gemini", timeoutMs: AI_TIMEOUT_MS, models: { groq: process.env.GROQ_MODEL ?? null, gemini: process.env.GEMINI_MODEL ?? null }, results: ai },
     },
     { headers: { "cache-control": "no-store" } },
   );

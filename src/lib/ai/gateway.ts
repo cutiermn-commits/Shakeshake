@@ -106,7 +106,7 @@ export async function runAi<S extends z.ZodType>(deps: GatewayDeps, args: RunArg
 export function failureCopy(reason: FailReason): string {
   switch (reason) {
     case "no_consent":
-      return "AI help is off. You can switch it on in Settings → Privacy, or log it manually.";
+      return "AI help is off or needs your OK again (we added a second AI service). Review it in Settings → Privacy choices, or log it manually.";
     case "quota_user":
     case "quota_global":
     case "rate_limited":
