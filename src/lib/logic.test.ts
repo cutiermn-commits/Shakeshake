@@ -82,6 +82,16 @@ describe("message engine (TONE_AND_COPY §3, D-018)", () => {
     expect(MESSAGE_LIBRARY.length).toBeGreaterThan(40);
     for (const m of MESSAGE_LIBRARY) expect(pushCopyOk(m.text), m.text).toBe(true);
   });
+  it("copy library has no duplicate lines and never comments on bodies or weight", () => {
+    const texts = MESSAGE_LIBRARY.map((m) => m.text.toLowerCase());
+    expect(new Set(texts).size).toBe(texts.length);
+    const body = /\b(weight|fat|slim|skinny|thin|belly|waist|kilos?|figure|curves)\b/i;
+    for (const m of MESSAGE_LIBRARY) expect(body.test(m.text), m.text).toBe(false);
+  });
+  it("in-app categories exist for loading text and choosing a meal", () => {
+    expect(MESSAGE_LIBRARY.filter((m) => m.category === "loading").length).toBeGreaterThanOrEqual(8);
+    expect(MESSAGE_LIBRARY.filter((m) => m.category === "chosen").length).toBeGreaterThanOrEqual(5);
+  });
   it("seed copy avoids banned food-moralising phrases", () => {
     const banned = /\b(cheat|guilty|burn it off|earn (your|it))\b/i;
     for (const m of MESSAGE_LIBRARY) expect(banned.test(m.text), m.text).toBe(false);

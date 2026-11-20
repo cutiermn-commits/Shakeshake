@@ -33,6 +33,54 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "65d8dc86a2f3",
+    "category": "morning",
+    "text": "Morning, sunshine. The dal is soaking, the day is yours. ☀️",
+    "active": true
+  },
+  {
+    "id": "65f3f73353e6",
+    "category": "morning",
+    "text": "Good morning! Today's forecast: 100% chance of a great lunch.",
+    "active": true
+  },
+  {
+    "id": "79be7aa5d511",
+    "category": "morning",
+    "text": "Rise and shine. Somewhere a boiled egg is already rooting for you.",
+    "active": true
+  },
+  {
+    "id": "aa38e7f6c2e2",
+    "category": "morning",
+    "text": "Fresh day, fresh chutney, same wonderful you.",
+    "active": true
+  },
+  {
+    "id": "42b009332106",
+    "category": "morning",
+    "text": "Good morning! Filter coffee first, then we plan something delicious.",
+    "active": true
+  },
+  {
+    "id": "d3e3798d8b9a",
+    "category": "morning",
+    "text": "New day unlocked. Protein quests available: two. Rewards: tasty.",
+    "active": true
+  },
+  {
+    "id": "5560e6b7aec6",
+    "category": "morning",
+    "text": "Hello, early bird! Breakfast first — the protein adventure starts at lunch.",
+    "active": true
+  },
+  {
+    "id": "6dae13ba870f",
+    "category": "morning",
+    "text": "Wakey wakey. Your kitchen called — it misses your cooking already.",
+    "active": true
+  },
+  {
     "id": "0ddfc69cec27",
     "category": "suggestion_ready",
     "text": "Lunch idea is ready and honestly? It's flirting with you. 😋",
@@ -57,6 +105,36 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "1b42202cc504",
+    "category": "suggestion_ready",
+    "text": "Lunch idea just arrived, smelling of curry leaves and good decisions.",
+    "active": true
+  },
+  {
+    "id": "b859202dfe0e",
+    "category": "suggestion_ready",
+    "text": "Tonight's dinner idea is ready. It's high in protein and low on drama.",
+    "active": true
+  },
+  {
+    "id": "0f0f49ed5255",
+    "category": "suggestion_ready",
+    "text": "Psst — your next meal idea is ready, and it's showing off a little.",
+    "active": true
+  },
+  {
+    "id": "8f779c24d720",
+    "category": "suggestion_ready",
+    "text": "New idea plated up. Spoiler: there's a tadka involved.",
+    "active": true
+  },
+  {
+    "id": "af615becf159",
+    "category": "suggestion_ready",
+    "text": "Your dinner suggestion has entered the chat. 🍛",
+    "active": true
+  },
+  {
     "id": "b9e825f8f125",
     "category": "swap",
     "text": "Not feeling it? No heartbreak here — let's find you a better match.",
@@ -72,6 +150,36 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "4a0ffc0eb7bd",
     "category": "swap",
     "text": "Fussy? We love that. Here are three more options.",
+    "active": true
+  },
+  {
+    "id": "a4576e69af28",
+    "category": "swap",
+    "text": "Swapped! Plenty more dosas in the sea.",
+    "active": true
+  },
+  {
+    "id": "45671a315333",
+    "category": "swap",
+    "text": "Done. The old idea has been sent back to the kitchen with love.",
+    "active": true
+  },
+  {
+    "id": "025c992f2a44",
+    "category": "swap",
+    "text": "New match found. This one swipes right on protein.",
+    "active": true
+  },
+  {
+    "id": "49b1f085a820",
+    "category": "swap",
+    "text": "Swapped! Even the sambar respects a person who knows what they want.",
+    "active": true
+  },
+  {
+    "id": "322903e960ee",
+    "category": "swap",
+    "text": "Fresh options coming up — being picky is a form of self-care.",
     "active": true
   },
   {
@@ -99,6 +207,36 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "e342248e701d",
+    "category": "plate_reminder",
+    "text": "Plate check! Strike a pose — the plate's pose, not yours. 📸",
+    "active": true
+  },
+  {
+    "id": "932e579ef964",
+    "category": "plate_reminder",
+    "text": "Before the first bite: one photo for the album of good decisions.",
+    "active": true
+  },
+  {
+    "id": "67e2d8fef7d6",
+    "category": "plate_reminder",
+    "text": "Lights, camera, kuzhambu! Snap your plate, then dig in.",
+    "active": true
+  },
+  {
+    "id": "d5c07b0ce779",
+    "category": "plate_reminder",
+    "text": "Your plate is camera-ready. One quick click, then it's all yours.",
+    "active": true
+  },
+  {
+    "id": "7bc43aa0580c",
+    "category": "plate_reminder",
+    "text": "Paparazzi alert: your dinner would like its photo taken.",
+    "active": true
+  },
+  {
     "id": "c6d2e3d04809",
     "category": "logged_thanks",
     "text": "Logged! You're officially more organised than my kitchen.",
@@ -114,6 +252,42 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "88a12439940a",
     "category": "logged_thanks",
     "text": "Done! Data never tasted this good.",
+    "active": true
+  },
+  {
+    "id": "99cad44e2eb5",
+    "category": "logged_thanks",
+    "text": "Logged! Your future self just sent a thank-you note.",
+    "active": true
+  },
+  {
+    "id": "aff2a204e066",
+    "category": "logged_thanks",
+    "text": "Saved. Data entry has never looked this delicious.",
+    "active": true
+  },
+  {
+    "id": "ec34d2cd7fea",
+    "category": "logged_thanks",
+    "text": "Done and dusted, like a perfect dosa flip.",
+    "active": true
+  },
+  {
+    "id": "0ec6ae3ab43d",
+    "category": "logged_thanks",
+    "text": "Got it! You're on a roll.",
+    "active": true
+  },
+  {
+    "id": "c575d4580958",
+    "category": "logged_thanks",
+    "text": "Logged. The spreadsheet in my heart is very happy.",
+    "active": true
+  },
+  {
+    "id": "6d77b3a6862c",
+    "category": "logged_thanks",
+    "text": "Noted, with a chef's kiss. 👌",
     "active": true
   },
   {
@@ -141,6 +315,30 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "4665553f1a4e",
+    "category": "protein_hit",
+    "text": "Protein target reached! Somewhere, a gym towel just swooned.",
+    "active": true
+  },
+  {
+    "id": "b1072b2882c2",
+    "category": "protein_hit",
+    "text": "Goal done. Real food, real effort, really proud of you. 💛",
+    "active": true
+  },
+  {
+    "id": "948d3031566e",
+    "category": "protein_hit",
+    "text": "Protein: complete. Achievement unlocked: Sambar Champion.",
+    "active": true
+  },
+  {
+    "id": "594253504ade",
+    "category": "protein_hit",
+    "text": "You hit your protein today. The dal deserves a standing ovation too.",
+    "active": true
+  },
+  {
     "id": "e1008c50fb3a",
     "category": "protein_close",
     "text": "Just a few grams away — a bowl of thayir or a boiled egg would close the deal.",
@@ -150,6 +348,30 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "a4f0dda62ef0",
     "category": "protein_close",
     "text": "So close! One sundal snack and you're there.",
+    "active": true
+  },
+  {
+    "id": "d58206fce1ab",
+    "category": "protein_close",
+    "text": "Almost there — a handful of roasted chana would seal the deal.",
+    "active": true
+  },
+  {
+    "id": "7e457929330a",
+    "category": "protein_close",
+    "text": "So close! A glass of buttermilk is basically a protein high-five.",
+    "active": true
+  },
+  {
+    "id": "6af7f503c390",
+    "category": "protein_close",
+    "text": "A few grams to go. An egg is small but mighty.",
+    "active": true
+  },
+  {
+    "id": "0f6179227c36",
+    "category": "protein_close",
+    "text": "Nearly done! A little sundal would finish the job beautifully.",
     "active": true
   },
   {
@@ -177,6 +399,30 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "1a4889a1a5bb",
+    "category": "streak",
+    "text": "5 days straight! You're more consistent than the morning milk delivery.",
+    "active": true
+  },
+  {
+    "id": "2efbd390889a",
+    "category": "streak",
+    "text": "10-day streak! Even the pressure cooker whistles in your honour.",
+    "active": true
+  },
+  {
+    "id": "763ce1c88fcb",
+    "category": "streak",
+    "text": "21 days. That's not a streak any more — that's a lifestyle.",
+    "active": true
+  },
+  {
+    "id": "71aa52654062",
+    "category": "streak",
+    "text": "Another day, another tick. Love watching this chain grow. 🔥",
+    "active": true
+  },
+  {
     "id": "026ed1911a59",
     "category": "missed_day",
     "text": "We missed you yesterday! No stress — today's a fresh plate.",
@@ -192,6 +438,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "ba3f6e5e4440",
     "category": "missed_day",
     "text": "The app was lonely without you. Lunch idea's waiting whenever you are.",
+    "active": true
+  },
+  {
+    "id": "26a890efbab4",
+    "category": "missed_day",
+    "text": "Yesterday took a holiday. Today is a great day to come back.",
+    "active": true
+  },
+  {
+    "id": "cd2737bdc7ab",
+    "category": "missed_day",
+    "text": "No log yesterday? No problem. One small meal at a time.",
+    "active": true
+  },
+  {
+    "id": "017e36d5a046",
+    "category": "missed_day",
+    "text": "Missed you! The recipe ideas kept your seat warm.",
     "active": true
   },
   {
@@ -213,6 +477,30 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "9e75a300f771",
+    "category": "burn_logged",
+    "text": "Steps logged. The pavement says thank you.",
+    "active": true
+  },
+  {
+    "id": "a9b9f6ff4654",
+    "category": "burn_logged",
+    "text": "Burn saved! Your Oura ring and I are both impressed.",
+    "active": true
+  },
+  {
+    "id": "748e3ed7bb79",
+    "category": "burn_logged",
+    "text": "Active calories noted. You moved; the app grooved.",
+    "active": true
+  },
+  {
+    "id": "16becdf147f7",
+    "category": "burn_logged",
+    "text": "Logged. Movement is a love letter to future you.",
+    "active": true
+  },
+  {
     "id": "ee35c26a6164",
     "category": "leaderboard_up",
     "text": "You just climbed the leaderboard. Friends, take notes.",
@@ -222,6 +510,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "c43dc182d376",
     "category": "leaderboard_up",
     "text": "Up you go! Somebody's friends are getting nervous.",
+    "active": true
+  },
+  {
+    "id": "76ead1c8df25",
+    "category": "leaderboard_up",
+    "text": "Climbing the board like a curry leaf in hot oil — fast and sizzling.",
+    "active": true
+  },
+  {
+    "id": "3466d2e0de1d",
+    "category": "leaderboard_up",
+    "text": "Up a spot! Your friends just felt a mysterious chill.",
+    "active": true
+  },
+  {
+    "id": "bb4e67e49951",
+    "category": "leaderboard_up",
+    "text": "New position on the board. The podium is calling.",
     "active": true
   },
   {
@@ -237,6 +543,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "a0ef9c4a99ad",
+    "category": "leaderboard_week_won",
+    "text": "Week won! The crown is yours — garnished with coriander. 👑",
+    "active": true
+  },
+  {
+    "id": "9848cefc63a2",
+    "category": "leaderboard_week_won",
+    "text": "Champion! This week's trophy is a golden ladle.",
+    "active": true
+  },
+  {
+    "id": "76cbff5d6937",
+    "category": "leaderboard_week_won",
+    "text": "Top of the board! Celebrate with something delicious (and protein-rich).",
+    "active": true
+  },
+  {
     "id": "04862710942b",
     "category": "weekly_plan",
     "text": "Sunday planning time! 7 days of protein, zero \"what should I cook?\"",
@@ -249,6 +573,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "d07a62ad154e",
+    "category": "weekly_plan",
+    "text": "Sunday sorted: seven lunches, seven dinners, zero 'what's for dinner?'",
+    "active": true
+  },
+  {
+    "id": "985f93027e22",
+    "category": "weekly_plan",
+    "text": "Your week is planned. Future-you is doing a happy dance.",
+    "active": true
+  },
+  {
+    "id": "648069030c2a",
+    "category": "weekly_plan",
+    "text": "Plan ready! Monday-you will feel very organised.",
+    "active": true
+  },
+  {
     "id": "bb080370e9c1",
     "category": "grocery_ready",
     "text": "Grocery list ready. The vegetable vendor won't know what hit him.",
@@ -258,6 +600,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "0d0962d902b1",
     "category": "grocery_ready",
     "text": "Shopping list done — don't forget the curry leaves, they're the real MVP.",
+    "active": true
+  },
+  {
+    "id": "dece198624cc",
+    "category": "grocery_ready",
+    "text": "Grocery list ready. Market mission accepted. 🛒",
+    "active": true
+  },
+  {
+    "id": "087e34b3c45e",
+    "category": "grocery_ready",
+    "text": "List done! The fish seller won't know what hit him.",
+    "active": true
+  },
+  {
+    "id": "5410edcb2019",
+    "category": "grocery_ready",
+    "text": "Shopping list ready — and yes, the coriander is on it.",
     "active": true
   },
   {
@@ -285,6 +645,54 @@ export const MESSAGE_LIBRARY: Message[] = [
     "active": true
   },
   {
+    "id": "51ac68df20e3",
+    "category": "love_note",
+    "text": "You make ordinary weeknights feel like a festival. 💛",
+    "active": true
+  },
+  {
+    "id": "58467879a004",
+    "category": "love_note",
+    "text": "If kindness were an ingredient, you'd be the whole spice box.",
+    "active": true
+  },
+  {
+    "id": "6a81915fedce",
+    "category": "love_note",
+    "text": "Just a reminder that you're doing beautifully — on and off the plate.",
+    "active": true
+  },
+  {
+    "id": "d164baf7ccc3",
+    "category": "love_note",
+    "text": "You bring warmth to every kitchen you walk into.",
+    "active": true
+  },
+  {
+    "id": "d54ce68b299b",
+    "category": "love_note",
+    "text": "Some people collect stamps. You collect good days. Keep going.",
+    "active": true
+  },
+  {
+    "id": "4ff746e263b5",
+    "category": "love_note",
+    "text": "The world needs more people who cook with love. Lucky world.",
+    "active": true
+  },
+  {
+    "id": "192931d81128",
+    "category": "love_note",
+    "text": "Proud of you — not for the numbers, for showing up.",
+    "active": true
+  },
+  {
+    "id": "0c9caecd1c42",
+    "category": "love_note",
+    "text": "You're the reason ordinary rasam tastes like home.",
+    "active": true
+  },
+  {
     "id": "42280248a9c9",
     "category": "empty_state",
     "text": "No meals logged yet — the plate is clean and full of possibility.",
@@ -294,6 +702,24 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "1871014dc0b5",
     "category": "empty_state",
     "text": "No friends here yet. Invite someone to share the snacks (and the leaderboard).",
+    "active": true
+  },
+  {
+    "id": "4960aa15ccfd",
+    "category": "empty_state",
+    "text": "Nothing here yet — a blank plate is just a meal waiting to happen.",
+    "active": true
+  },
+  {
+    "id": "3775580918fa",
+    "category": "empty_state",
+    "text": "Quiet in here. Invite a friend and bring the snacks (and the competition).",
+    "active": true
+  },
+  {
+    "id": "b667e2ddb988",
+    "category": "empty_state",
+    "text": "No messages yet. Little love notes will start arriving soon. 💌",
     "active": true
   },
   {
@@ -312,6 +738,120 @@ export const MESSAGE_LIBRARY: Message[] = [
     "id": "315753b4bd73",
     "category": "error_friendly",
     "text": "Too many recipe requests today! We'll be back tomorrow, fresher than idli batter.",
+    "active": true
+  },
+  {
+    "id": "4b9c53526e23",
+    "category": "error_friendly",
+    "text": "The AI chef stepped out for chai. A saved favourite is ready meanwhile.",
+    "active": true
+  },
+  {
+    "id": "372dd2b59c7c",
+    "category": "error_friendly",
+    "text": "Hmm, the recipe genie needs a minute. Try again shortly.",
+    "active": true
+  },
+  {
+    "id": "208c4923fcc4",
+    "category": "error_friendly",
+    "text": "Kitchen's a little crowded right now — your saved recipes have your back.",
+    "active": true
+  },
+  {
+    "id": "d10f927d7c6c",
+    "category": "loading",
+    "text": "Stirring the pot…",
+    "active": true
+  },
+  {
+    "id": "b8a47faed39e",
+    "category": "loading",
+    "text": "Grinding the masala…",
+    "active": true
+  },
+  {
+    "id": "143ef5ee5563",
+    "category": "loading",
+    "text": "Asking the curry leaves for advice…",
+    "active": true
+  },
+  {
+    "id": "e2e21c8497a4",
+    "category": "loading",
+    "text": "Tempering mustard seeds… listen for the pop…",
+    "active": true
+  },
+  {
+    "id": "4a973393a9da",
+    "category": "loading",
+    "text": "Counting the protein, twice…",
+    "active": true
+  },
+  {
+    "id": "e65a4cb3f159",
+    "category": "loading",
+    "text": "Waiting for the pressure cooker's third whistle…",
+    "active": true
+  },
+  {
+    "id": "21b893b17a43",
+    "category": "loading",
+    "text": "Tasting for salt…",
+    "active": true
+  },
+  {
+    "id": "9afa5d6b8a1f",
+    "category": "loading",
+    "text": "Rolling out a fresh idea…",
+    "active": true
+  },
+  {
+    "id": "8264fc6a8d21",
+    "category": "loading",
+    "text": "Consulting the spice box…",
+    "active": true
+  },
+  {
+    "id": "02a25a9706c8",
+    "category": "loading",
+    "text": "Flipping through grandma's recipe notebook…",
+    "active": true
+  },
+  {
+    "id": "30adf2f111b4",
+    "category": "chosen",
+    "text": "Great choice! Your plate-photo reminder is set.",
+    "active": true
+  },
+  {
+    "id": "aa4c33ee16ae",
+    "category": "chosen",
+    "text": "Locked in. Good food, good choices, good you.",
+    "active": true
+  },
+  {
+    "id": "f49c69028930",
+    "category": "chosen",
+    "text": "Chosen! I'll nudge you for a plate photo after the meal.",
+    "active": true
+  },
+  {
+    "id": "a456257fb06b",
+    "category": "chosen",
+    "text": "Excellent pick — the kitchen is already excited.",
+    "active": true
+  },
+  {
+    "id": "2bd10bdff593",
+    "category": "chosen",
+    "text": "Decision made. That's the hardest part done!",
+    "active": true
+  },
+  {
+    "id": "09da3fba54ac",
+    "category": "chosen",
+    "text": "Yes! That one's going to taste like a win.",
     "active": true
   },
   {
