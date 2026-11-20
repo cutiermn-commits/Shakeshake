@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { linesFor } from "@/lib/messages/lines";
 import { applySwap, chooseMeal, getSwapOptions, skipMeal, suggestMeal, type SwapOption } from "@/app/actions/meals";
 import { NutritionBadge } from "./ui";
 
@@ -17,12 +18,26 @@ const REASONS = [
   ["veg", "Veg tonight 🥦"],
 ] as const;
 
-export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner"; slot: SlotView | null; date: string }) {
+const LOADING = linesFor("loading");
+
+/** Rotating, playful "the chef is working" text — plain text when `gentle` (safety mode, TONE_AND_COPY §2.5). */
+function useLoadingLine(active: boolean, gentle: boolean, plain: string) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (!active || gentle || !LOADING.length) return;
+    const t = setInterval(() => setI((n) => n + 1), 2500);
+    return () => clearInterval(t);
+  }, [active, gentle]);
+  return gentle || !LOADING.length ? plain : LOADING[i % LOADING.length];
+}
+
+export function MealCard({ mealType, slot, date, gentle = false }: { mealType: "lunch" | "dinner"; slot: SlotView | null; date: string; gentle?: boolean }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
   const [options, setOptions] = useState<SwapOption[] | null>(null);
   const [swapping, setSwapping] = useState(false);
   const label = mealType === "lunch" ? "Lunch" : "Dinner";
+  const loadingLine = useLoadingLine(pending, gentle, "Finding a recipe… (up to ~30 s)");
 
   const run = (fn: () => Promise<{ ok: boolean; error?: string; note?: string }>) =>
     start(async () => {
@@ -41,7 +56,7 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
         <h2 className="h2">{label}</h2>
         <p className="muted mt-1">No idea yet — want one?</p>
         <button className="btn-primary mt-3 w-full" disabled={pending} onClick={() => run(() => suggestMeal(mealType, date))}>
-          {pending ? "Cooking up an idea… (up to ~30 s)" : `Suggest ${label.toLowerCase()}`}
+          {pending ? loadingLine : `Suggest ${label.toLowerCase()}`}
         </button>
         {msg ? <p role="status" className="mt-2 text-sm text-ink-2">{msg}</p> : null}
       </section>
@@ -70,7 +85,7 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
       </div>
       {swapping ? (
         <div className="mt-3 space-y-2">
-          <p className="text-sm">Not feeling it? No heartbreak here — let&apos;s find you a better match.</p>
+          <p className="text-sm">{gentle ? "Choose what you'd like instead:" : "Not feeling it? No heartbreak here — let's find you a better match."}</p>
           <div className="flex flex-wrap gap-2">
             {REASONS.map(([k, l]) => (
               <button key={k} className="chip" disabled={pending} onClick={() => start(async () => {
@@ -88,11 +103,11 @@ export function MealCard({ mealType, slot, date }: { mealType: "lunch" | "dinner
               })}>{l}</button>
             ))}
           </div>
-          {pending && !options ? <p className="muted" role="status">Finding three more options…</p> : null}
+          {pending && !options ? <p className="muted" role="status">{loadingLine}</p> : null}
           {options?.map((o) => (
             <button key={o.id} className="w-full rounded-xl border border-line p-3 text-left hover:border-brand" disabled={pending} onClick={() => run(async () => {
               const res = await applySwap(slot.id, o.id);
-              if (res.ok) { setOptions(null); setSwapping(false); return { ok: true, note: "Swapped! The new one tried harder." }; }
+              if (res.ok) { setOptions(null); setSwapping(false); }
               return res;
             })}>
               <span className="block font-semibold">{o.title}</span>

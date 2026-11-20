@@ -6,7 +6,7 @@
 export type Category =
   | "morning" | "suggestion_ready" | "swap" | "plate_reminder" | "logged_thanks" | "protein_hit" | "protein_close"
   | "streak" | "missed_day" | "burn_logged" | "leaderboard_up" | "leaderboard_week_won" | "weekly_plan"
-  | "grocery_ready" | "love_note" | "empty_state" | "error_friendly" | "caring";
+  | "grocery_ready" | "love_note" | "empty_state" | "error_friendly" | "caring" | "loading" | "chosen";
 
 export interface Message {
   id: string;
@@ -44,7 +44,7 @@ export const PUSH_CATEGORIES = new Set<Category>([
 ]);
 
 /** Playful categories suppressed in safety mode (NUTRITION_RULES §7). */
-export const PLAYFUL = new Set<Category>(["morning", "suggestion_ready", "swap", "logged_thanks", "protein_hit", "protein_close", "streak", "burn_logged", "leaderboard_up", "leaderboard_week_won", "love_note", "grocery_ready", "weekly_plan", "missed_day"]);
+export const PLAYFUL = new Set<Category>(["morning", "suggestion_ready", "swap", "logged_thanks", "protein_hit", "protein_close", "streak", "burn_logged", "leaderboard_up", "leaderboard_week_won", "love_note", "grocery_ready", "weekly_plan", "missed_day", "loading", "chosen"]);
 
 export function inQuietHours(localMin: number, cfg: EngineConfig = DEFAULT_ENGINE_CONFIG): boolean {
   const { quietStartMin: s, quietEndMin: e } = cfg;

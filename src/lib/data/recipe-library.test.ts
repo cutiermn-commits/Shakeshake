@@ -18,6 +18,13 @@ describe("built-in recipe library (D-031)", () => {
     expect(has("soya chunks")).toBeGreaterThanOrEqual(3);
     expect(RECIPE_LIBRARY.filter((r) => r.ingredients.some((i) => /millet|ragi|jowar|quinoa/.test(i.name))).length).toBeGreaterThanOrEqual(8);
   });
+  it("v3 brings the library to 120 with more seafood, egg and tofu ideas", () => {
+    expect(RECIPE_LIBRARY.length).toBeGreaterThanOrEqual(120);
+    const has = (re: RegExp) => RECIPE_LIBRARY.filter((r) => r.ingredients.some((i) => re.test(i.name))).length;
+    expect(has(/^tofu$/)).toBeGreaterThanOrEqual(3);
+    expect(has(/prawn|crab|mackerel|seer fish|tuna|rohu|tilapia/)).toBeGreaterThanOrEqual(10);
+    expect(RECIPE_LIBRARY.filter((r) => r.diet_type === "egg").length).toBeGreaterThanOrEqual(10);
+  });
   it("offers every diet type", () => {
     for (const d of ["nonveg", "egg", "veg"] as const) expect(RECIPE_LIBRARY.some((r) => r.diet_type === d)).toBe(true);
   });

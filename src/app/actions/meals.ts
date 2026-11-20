@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getHealthProfile, getTargets, requireMember } from "@/lib/server/dal";
 import { planWeek, suggestFor, swapOptions, type MealType } from "@/lib/server/meals";
 import { failureCopy } from "@/lib/ai/gateway";
+import { playfulNote } from "@/lib/server/notes";
 
 export type ActionResult<T = undefined> = { ok: true; data?: T; note?: string } | { ok: false; error: string };
 
@@ -72,7 +73,7 @@ export async function getSwapOptions(slotId: string, reason: z.infer<typeof Swap
 }
 
 export async function applySwap(slotId: string, recipeId: string): Promise<ActionResult> {
-  const { supabase } = await requireMember();
+  const { uid, supabase, today } = await requireMember();
   const { error } = await supabase
     .from("meal_plan_slots")
     .update({ recipe_id: z.uuid().parse(recipeId), status: "swapped", remind_at: null })
@@ -80,12 +81,12 @@ export async function applySwap(slotId: string, recipeId: string): Promise<Actio
   if (error) return { ok: false, error: "Couldn't swap — please try again." };
   revalidatePath("/today");
   revalidatePath("/plan");
-  return { ok: true };
+  return { ok: true, note: await playfulNote(supabase, uid, today, "swap", "Swapped.") };
 }
 
 /** M2-08: choosing schedules the plate reminder at meal time + offset (dispatcher sends it). */
 export async function chooseMeal(slotId: string): Promise<ActionResult> {
-  const { supabase, profile } = await requireMember();
+  const { uid, supabase, profile, today } = await requireMember();
   const { data: slot } = await supabase.from("meal_plan_slots").select("id, date, meal_type").eq("id", z.uuid().parse(slotId)).single();
   if (!slot) return { ok: false, error: "That meal slot wasn't found." };
   const time = slot.meal_type === "lunch" ? profile.lunch_time : profile.dinner_time;
@@ -98,7 +99,7 @@ export async function chooseMeal(slotId: string): Promise<ActionResult> {
   if (error) return { ok: false, error: "Couldn't save your choice." };
   revalidatePath("/today");
   revalidatePath("/plan");
-  return { ok: true };
+  return { ok: true, note: await playfulNote(supabase, uid, today, "chosen", "Saved. We'll remind you to log your plate.") };
 }
 
 export async function skipMeal(slotId: string): Promise<ActionResult> {
@@ -130,6 +131,7 @@ export async function planMyWeek(weekOf?: string): Promise<ActionResult> {
     const failed = Object.values(res).find((r) => !r.ids.length);
     if (failed && failed.failure) return { ok: false, error: failureCopy(failed.failure.reason) };
     const cached = Object.values(res).some((r) => r.source === "cache");
-    return { ok: true, note: cached ? "Some days use your saved recipes while the AI chef rests." : "Your week, sorted. Future-you says thank you." };
+    const done = await playfulNote(supabase, uid, today, "weekly_plan", "Your week is planned.");
+    return { ok: true, note: cached ? `${done} Some days use saved recipes while the AI chef rests.` : done };
   });
 }

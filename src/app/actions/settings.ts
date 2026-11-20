@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { ageFromBirthYear, suggestTargets } from "@/lib/nutrition/targets";
 import { buildGroceryList } from "@/lib/nutrition/grocery";
 import { weekStart } from "@/lib/nutrition/balance";
+import { playfulNote } from "@/lib/server/notes";
 import type { ActionResult } from "./meals";
 
 const Purpose = z.enum(["health_data", "ai_processing", "social_sharing", "marketing_push"]);
@@ -133,7 +134,7 @@ export async function markInboxRead(): Promise<ActionResult> {
 
 /** M4-02: (re)build this week's grocery list from the plan; keeps check-offs for unchanged items. */
 export async function buildGrocery(weekOf: string): Promise<ActionResult> {
-  const { uid, supabase } = await requireMember();
+  const { uid, supabase, today } = await requireMember();
   const ws = weekStart(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).parse(weekOf));
   const { data: plan } = await supabase.from("meal_plans").select("id").eq("user_id", uid).eq("week_start", ws).maybeSingle();
   if (!plan) return { ok: false, error: "Plan your week first." };
@@ -159,7 +160,7 @@ export async function buildGrocery(weekOf: string): Promise<ActionResult> {
       items.map((i) => ({ list_id: list!.id, food_key: i.key, name: i.name, grams: i.grams, qty: i.qty, unit: i.unit, aisle: i.aisle, is_staple: i.isStaple, checked: checked.has(i.key) })),
     );
   revalidatePath("/grocery");
-  return { ok: true, note: "Grocery list ready. Don't forget the curry leaves — they're the real MVP." };
+  return { ok: true, note: await playfulNote(supabase, uid, today, "grocery_ready", "Grocery list ready.") };
 }
 
 export async function toggleGroceryItem(itemId: string, checked: boolean): Promise<ActionResult> {

@@ -4,6 +4,7 @@ import { getConsents, getTargets, requireMember } from "@/lib/server/dal";
 import { dayTotals, slotsBetween } from "@/lib/server/stats";
 import { addDays, isSafetyMode } from "@/lib/nutrition/balance";
 import { MESSAGE_LIBRARY } from "@/lib/messages/library.generated";
+import { pickLine } from "@/lib/messages/lines";
 import { MealCard } from "@/components/MealCard";
 import { PushSetup } from "@/components/PushSetup";
 import { Meter, Page, PageSkeleton } from "@/components/ui";
@@ -37,14 +38,21 @@ async function Today({ searchParams }: { searchParams: Promise<Record<string, st
       ) : null}
       <section className="card space-y-3" aria-label="Today so far">
         <Meter label="Protein" value={t.proteinG} min={targets?.protein_g_min ?? null} max={targets?.protein_g_max ?? null} />
+        {!safety && targets?.protein_g_min ? (
+          t.proteinG >= targets.protein_g_min ? (
+            <p className="text-sm font-medium text-leaf">{pickLine("protein_hit", today + uid)}</p>
+          ) : targets.protein_g_min - t.proteinG <= 15 && t.mealsLogged > 0 ? (
+            <p className="text-sm text-ink-2">{pickLine("protein_close", today + uid)}</p>
+          ) : null
+        ) : null}
         <Meter label="Calories" value={t.intakeKcal} min={targets?.kcal_min ?? null} max={targets?.kcal_max ?? null} />
         <p className="muted">
           {t.mealsLogged ? `${t.mealsLogged} meal${t.mealsLogged > 1 ? "s" : ""} logged.` : "No meals logged yet — the plate is clean and full of possibility."}{" "}
           <Link href="/dashboard" className="underline">Balance & burn →</Link>
         </p>
       </section>
-      <MealCard mealType="lunch" slot={lunch} date={today} />
-      <MealCard mealType="dinner" slot={dinner} date={today} />
+      <MealCard mealType="lunch" slot={lunch} date={today} gentle={safety} />
+      <MealCard mealType="dinner" slot={dinner} date={today} gentle={safety} />
       <PushSetup compact />
     </Page>
   );

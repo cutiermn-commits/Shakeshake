@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { getConsents, requireMember } from "@/lib/server/dal";
 import { slotsBetween } from "@/lib/server/stats";
+import { inSafetyMode } from "@/lib/server/notes";
 import { addDays, weekStart } from "@/lib/nutrition/balance";
 import { MealCard } from "@/components/MealCard";
 import { NutritionBadge, Page, PageSkeleton } from "@/components/ui";
@@ -13,7 +14,7 @@ async function Plan({ searchParams }: { searchParams: Promise<{ week?: string; d
   const { uid, supabase, today } = await requireMember();
   const sp = await searchParams;
   const ws = sp.week && /^\d{4}-\d{2}-\d{2}$/.test(sp.week) ? weekStart(sp.week) : weekStart(today);
-  const [slots, consents] = await Promise.all([slotsBetween(supabase, uid, ws, addDays(ws, 6)), getConsents()]);
+  const [slots, consents, gentle] = await Promise.all([slotsBetween(supabase, uid, ws, addDays(ws, 6)), getConsents(), inSafetyMode(supabase, uid, today)]);
   const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
   const fmt = (d: string, o: Intl.DateTimeFormatOptions) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-IN", { ...o, timeZone: "UTC" });
   const openDay = sp.day && days.includes(sp.day) ? sp.day : null;
@@ -29,8 +30,8 @@ async function Plan({ searchParams }: { searchParams: Promise<{ week?: string; d
       {openDay ? (
         <>
           <h2 className="h2">{fmt(openDay, { weekday: "long", day: "numeric", month: "short" })}</h2>
-          <MealCard mealType="lunch" slot={slots.find((s) => s.date === openDay && s.meal_type === "lunch") ?? null} date={openDay} />
-          <MealCard mealType="dinner" slot={slots.find((s) => s.date === openDay && s.meal_type === "dinner") ?? null} date={openDay} />
+          <MealCard mealType="lunch" slot={slots.find((s) => s.date === openDay && s.meal_type === "lunch") ?? null} date={openDay} gentle={gentle} />
+          <MealCard mealType="dinner" slot={slots.find((s) => s.date === openDay && s.meal_type === "dinner") ?? null} date={openDay} gentle={gentle} />
           <Link href={`/plan?week=${ws}`} className="btn-ghost w-full">Back to week</Link>
         </>
       ) : (

@@ -9,6 +9,7 @@ import { failureCopy, runAi } from "@/lib/ai/gateway";
 import { PlateEstimateSchema, type PlateEstimate } from "@/lib/ai/schemas";
 import { platePrompt } from "@/lib/ai/prompts";
 import { refreshDailyScore } from "@/lib/server/scoring";
+import { playfulNote } from "@/lib/server/notes";
 import type { ActionResult } from "./meals";
 
 const MAX_IMAGE_B64 = 420_000; // ≈ 300 KB binary — client compresses to ≤ ~150 KB
@@ -65,7 +66,7 @@ export async function saveMealLog(input: z.input<typeof LogSchema>): Promise<Act
   revalidatePath("/today");
   revalidatePath("/dashboard");
   revalidatePath("/feed");
-  return { ok: true, note: "Logged! You're officially more organised than my kitchen." };
+  return { ok: true, note: await playfulNote(supabase, uid, v.date, "logged_thanks", "Saved.") };
 }
 
 export async function deleteMealLog(id: string): Promise<ActionResult> {
@@ -105,5 +106,5 @@ export async function saveBurn(input: z.input<typeof BurnSchema>): Promise<Actio
   after(() => refreshDailyScore(uid, v.date));
   revalidatePath("/dashboard");
   revalidatePath("/leaderboard");
-  return { ok: true, note: "Burn logged. You moved, you grooved, you logged it." };
+  return { ok: true, note: await playfulNote(supabase, uid, v.date, "burn_logged", "Saved.") };
 }
