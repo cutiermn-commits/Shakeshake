@@ -1,0 +1,222 @@
+<title>Shake Shake Architecture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column; the two diagrams break out wider and scroll sideways on phones. Palette = the app's own tokens. */
+:root {
+  --bg: #fffaf2; --surface: #ffffff; --surface-2: #fbf1e1; --ink: #2b1d0e; --ink-2: #6b5843; --line: #ecdcc4;
+  --brand: #b4420c; --leaf: #2f6b3a; --warn: #9a5b00;
+  --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #17110b; --surface: #221911; --surface-2: #2c2118; --ink: #f8ecdc; --ink-2: #c9b49b; --line: #3d2f22;
+  --brand: #ff8a4c; --leaf: #7cc68a; --warn: #f0b85a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #17110b; --surface: #221911; --surface-2: #2c2118; --ink: #f8ecdc; --ink-2: #c9b49b; --line: #3d2f22;
+  --brand: #ff8a4c; --leaf: #7cc68a; --warn: #f0b85a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 40px; }
+.col { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); }
+h2 { font-size: 1.5rem; margin-bottom: 12px; }
+h3 { font-size: 1.05rem; }
+p { margin: 0 0 10px; }
+.lede { color: var(--ink-2); font-size: 1.1rem; margin-top: 10px; }
+.eyebrow { font: 600 0.75rem/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 10px; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; min-width: 820px; background: transparent; }
+.seq pre.mermaid { min-width: 760px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .85rem; color: var(--ink-2); margin-top: 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.grid > div { min-width: 0; border-top: 2px solid var(--line); padding-top: 12px; }
+.grid p, .grid li { color: var(--ink-2); font-size: .95rem; }
+ul { margin: 6px 0 0; padding-left: 18px; }
+li { margin-bottom: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 .75rem/1.2 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.tag { display: inline-block; font: 600 .7rem/1 var(--body); letter-spacing: .04em; padding: 4px 6px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.tag.ok { color: var(--leaf); } .tag.warn { color: var(--warn); }
+.cost { font-family: var(--display); font-size: 2.4rem; color: var(--leaf); line-height: 1; }
+footer { color: var(--ink-2); font-size: .85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+code { font-size: .88em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+  <header class="col">
+    <div class="eyebrow">End-to-end architecture</div>
+    <h1>Shake Shake</h1>
+    <p class="lede">An iPhone-first web app that suggests protein-rich South Indian meals, plans the week, logs plates and sends kind, funny notes. Everything runs on free tiers.</p>
+  </header>
+
+  <section>
+    <h2>The system at a glance</h2>
+    <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  subgraph U["📱 User's iPhone"]
+    PWA["Home Screen web app<br/>(PWA)"]
+    SW["Service worker<br/>offline page · push receiver"]
+    CAM["Photo compress + strip location<br/>before upload"]
+  end
+
+  subgraph V["▲ Vercel Hobby · Next.js app"]
+    PX["proxy.ts<br/>session check on every request"]
+    UI["Pages + Server Actions<br/>Today · Plan · Log · Grocery · Friends"]
+    GW["AI gateway<br/>consent → daily quota → call →<br/>schema check → allergy filter"]
+    NE["Nutrition engine<br/>calories &amp; protein from USDA data"]
+    ME["Message engine<br/>caps · quiet hours · safety mode"]
+    API["Route handlers<br/>cron/dispatch · cron/retention<br/>health (admin) · account/export"]
+  end
+
+  subgraph S["⚡ Supabase (free plan)"]
+    AUTH["Auth<br/>email code sign-in"]
+    DB[("Postgres + Row Level Security<br/>profiles · meals · plans · foods<br/>recipes (incl. 120 built-in) · messages · consents")]
+    ST["Storage<br/>plate photos"]
+    CRON["pg_cron + pg_net<br/>every 5 min"]
+  end
+
+  subgraph X["🌐 External services"]
+    GROQ["Groq · Qwen<br/>AI #1"]
+    GEM["Google Gemini<br/>AI #2"]
+    SMTP["Gmail SMTP<br/>login codes"]
+    PUSH["Web Push services<br/>(Apple / browser)"]
+    USDA["USDA FoodData Central<br/>imported at build time"]
+  end
+
+  PWA <-->|HTTPS| PX --> UI
+  CAM --> UI
+  UI --> GW
+  UI --> NE
+  UI --> ME
+  UI <-->|"user's own session<br/>(RLS enforced)"| DB
+  UI --> ST
+  GW -->|"1st try"| GROQ
+  GW -.->|"if busy"| GEM
+  GW -.->|"if both fail:<br/>built-in recipes"| DB
+  NE --> DB
+  AUTH --> SMTP
+  PX <--> AUTH
+  CRON -->|"secret-signed call"| API
+  API --> ME
+  API --> PUSH --> SW
+  USDA -.->|"build-time import"| DB
+
+  classDef phone fill:#fbf1e1,stroke:#b4420c,color:#2b1d0e
+  classDef app fill:#ffffff,stroke:#b4420c,color:#2b1d0e
+  classDef data fill:#eef5ef,stroke:#2f6b3a,color:#2b1d0e
+  classDef ext fill:#f6f3ee,stroke:#6b5843,color:#2b1d0e
+  class PWA,SW,CAM phone
+  class PX,UI,GW,NE,ME,API app
+  class AUTH,DB,ST,CRON data
+  class GROQ,GEM,SMTP,PUSH,USDA ext
+</pre>
+      <div class="legend"><span>Solid line: every request</span><span>Dotted line: fallback or one-off import</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What happens when you tap “Suggest lunch”</h2>
+    <div class="diagram seq">
+<pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor P as iPhone
+  participant A as Next.js app (Vercel)
+  participant D as Supabase (Postgres + RLS)
+  participant Q as Groq · Qwen
+  participant G as Gemini
+  P->>A: Tap "Suggest lunch" (loading jokes rotate)
+  A->>D: Read profile, diet, allergies, targets, recent meals
+  A->>A: Check AI consent and today's quota
+  A->>Q: Ask for recipes as strict JSON
+  alt Groq busy or failing
+    A->>G: Same request to Gemini
+  end
+  alt Both AIs unavailable, or no consent
+    A->>D: Pick from 120 built-in recipes
+  end
+  A->>A: Validate schema, drop anything with an allergen or wrong diet
+  A->>A: Calculate calories and protein from USDA food table
+  A->>D: Save recipe and today's meal slot
+  A-->>P: Recipe card: protein, kcal, time, "Calculated" badge
+</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Design choices that matter</h2>
+    <div class="grid">
+      <div>
+        <h3>AI never stops the app</h3>
+        <p>Three layers: Qwen on Groq first, then Gemini, then a library of 120 hand-written recipes stored in the database. Manual logging always works, even with AI switched off.</p>
+      </div>
+      <div>
+        <h3>The AI doesn't do the maths</h3>
+        <p>The AI writes the recipe. The app works out calories and protein from a local USDA FoodData Central table, and shows a badge saying whether the numbers are calculated, partly calculated or an AI estimate.</p>
+      </div>
+      <div>
+        <h3>Privacy built in</h3>
+        <ul>
+          <li>Row Level Security on every table: you can only read your own rows.</li>
+          <li>AI use needs a separate, revocable opt-in.</li>
+          <li>Photos are shrunk and stripped of location before upload.</li>
+          <li>Account export and delete are built in.</li>
+          <li>Keys stay on the server, never in the phone.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Kind by default</h3>
+        <p>The message engine caps push notifications at 4 a day, respects quiet hours (22:00–07:00) and limits love notes to 2 a week. If the last few days' eating looks too restrictive, safety mode replaces every playful line with a calm check-in.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stack and running cost</h2>
+    <div class="grid" style="margin-bottom:16px">
+      <div style="border:0;padding:0">
+        <div class="cost">$0 / month</div>
+        <p style="color:var(--ink-2);margin-top:6px">Every service below is on a free tier or free plan.</p>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Choice</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>Client</td><td>Next.js PWA, Tailwind CSS</td><td>Installed to the iPhone Home Screen; Web Push works there on iOS 16.4+</td></tr>
+          <tr><td>Hosting</td><td>Vercel Hobby</td><td>App, Server Actions, route handlers; preview deploy for every pull request</td></tr>
+          <tr><td>Data</td><td>Supabase free plan</td><td>Postgres with RLS, email-code auth, photo storage, 5-minute scheduler</td></tr>
+          <tr><td>AI</td><td>Groq (Qwen) → Gemini → built-in library</td><td>Recipes, swaps, week plans, plate-photo estimates</td></tr>
+          <tr><td>Email</td><td>Gmail SMTP</td><td>Sends the sign-in codes</td></tr>
+          <tr><td>Nutrition data</td><td>USDA FoodData Central (CC0)</td><td>Imported once into the <code>foods</code> table, not called at runtime</td></tr>
+          <tr><td>Build</td><td>Claude Code, GitHub Actions</td><td>Code written with an AI coding agent; CI runs lint, typecheck and tests</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Known limits</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Area</th><th>Limit</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Vercel Hobby</td><td>Personal, non-commercial use only. Monetising means changing plan.</td><td><span class="tag ok">Documented</span></td></tr>
+          <tr><td>Supabase free</td><td>Project pauses after a week with no activity.</td><td><span class="tag ok">Documented</span></td></tr>
+          <tr><td>AI free tiers</td><td>Limits change and the models get busy; free Gemini may use data to improve Google products.</td><td><span class="tag warn">Handled by fallback + consent</span></td></tr>
+          <tr><td>Plate-photo estimates</td><td>Accuracy for South Indian dishes hasn't been measured yet.</td><td><span class="tag warn">Not verified</span></td></tr>
+          <tr><td>Gmail sending</td><td>Gmail caps daily sends, so a burst of sign-in attempts could block codes.</td><td><span class="tag warn">Invite-only for now</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="col">Drawn from the Shake Shake repository: <code>docs/ARCHITECTURE.md</code>, <code>docs/DECISIONS.md</code> and the code. Not medical advice: the app suggests ranges from published formulas.</footer>
+</div>
